@@ -20,12 +20,22 @@
         <CommonForm variant="minimal" @submit="handleRegister">
           <div class="form-section">
             <CommonInput
-              v-model="form.name"
+              v-model="form.firstName"
               label="Имя"
               type="text"
               placeholder="Введите ваше имя"
               variant="modern"
-              :rules="nameRules"
+              :rules="firstNameRules"
+              :loading="loading"
+            />
+
+            <CommonInput
+              v-model="form.lastName"
+              label="Фамилия"
+              type="text"
+              placeholder="Введите вашу фамилию"
+              variant="modern"
+              :rules="lastNameRules"
               :loading="loading"
             />
 
@@ -81,27 +91,6 @@
               :disabled="!isFormValid"
               class="register-btn"
             />
-
-            <div class="divider">
-              <span class="divider-text">или</span>
-            </div>
-
-            <div class="social-login">
-              <CommonButton
-                label="Google"
-                icon="fab fa-google"
-                variant="outline"
-                class="social-btn google-btn"
-                @click="registerWithGoogle"
-              />
-              <CommonButton
-                label="GitHub"
-                icon="fab fa-github"
-                variant="outline"
-                class="social-btn github-btn"
-                @click="registerWithGitHub"
-              />
-            </div>
           </div>
         </CommonForm>
 
@@ -139,16 +128,22 @@ const authStore = useAuthStore()
 const loading = ref(false)
 
 const form = ref({
-  name: '',
+  firstName: '',
+  lastName: '',
   email: '',
   password: '',
   confirmPassword: '',
   agreeToTerms: false
 })
 
-const nameRules = [
+const firstNameRules = [
   val => !!val || 'Имя обязательно',
   val => val.length >= 2 || 'Имя должно содержать минимум 2 символа'
+]
+
+const lastNameRules = [
+  val => !!val || 'Фамилия обязательна',
+  val => val.length >= 2 || 'Фамилия должна содержать минимум 2 символа'
 ]
 
 const emailRules = [
@@ -167,7 +162,8 @@ const confirmPasswordRules = [
 ]
 
 const isFormValid = computed(() => {
-  return form.value.name &&
+  return form.value.firstName &&
+         form.value.lastName &&
          form.value.email &&
          form.value.password &&
          form.value.confirmPassword &&
@@ -179,10 +175,7 @@ const isFormValid = computed(() => {
 
 const handleRegister = async () => {
   if (!isFormValid.value) {
-    $q.notify({
-      type: 'negative',
-      message: 'Пожалуйста, заполните все поля корректно'
-    })
+    console.log('Пожалуйста, заполните все поля корректно')
     return
   }
 
@@ -190,41 +183,19 @@ const handleRegister = async () => {
 
   try {
     await authStore.register({
-      name: form.value.name,
+      firstName: form.value.firstName,
+      lastName: form.value.lastName,
       email: form.value.email,
       password: form.value.password
     })
-
-    $q.notify({
-      type: 'positive',
-      message: 'Регистрация успешна! Добро пожаловать!'
-    })
-
+    console.log('Регистрация успешна! Добро пожаловать!')
     router.push('/')
   } catch (error) {
     console.error('Register error:', error)
-
-    $q.notify({
-      type: 'negative',
-      message: error.message || 'Ошибка регистрации. Попробуйте еще раз.'
-    })
+    console.log(error.message || 'Ошибка регистрации. Попробуйте еще раз.')
   } finally {
     loading.value = false
   }
-}
-
-const registerWithGoogle = () => {
-  $q.notify({
-    type: 'info',
-    message: 'Регистрация через Google будет добавлена позже'
-  })
-}
-
-const registerWithGitHub = () => {
-  $q.notify({
-    type: 'info',
-    message: 'Регистрация через GitHub будет добавлена позже'
-  })
 }
 
 const goToLogin = () => {
@@ -344,56 +315,6 @@ const goToLogin = () => {
           width: 100%;
           margin-bottom: 1.5rem;
         }
-
-        .divider {
-          position: relative;
-          text-align: center;
-          margin: 1.5rem 0;
-
-          &::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: rgba(226, 232, 240, 0.5);
-          }
-
-          .divider-text {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 0 1rem;
-            color: #b3b8c5;
-            font-size: 0.875rem;
-            font-weight: 500;
-          }
-        }
-
-        .social-login {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-
-          .social-btn {
-            &.google-btn {
-              border-color: #ea4335;
-              color: #ea4335;
-
-              &:hover {
-                background: rgba(234, 67, 53, 0.1);
-              }
-            }
-
-            &.github-btn {
-              border-color: #333;
-              color: #333;
-
-              &:hover {
-                background: rgba(51, 51, 51, 0.1);
-              }
-            }
-          }
-        }
       }
 
       .register-footer {
@@ -459,11 +380,6 @@ const goToLogin = () => {
           color: #e2e8f0;
         }
 
-        .form-actions .divider .divider-text {
-          background: rgba(26, 32, 44, 0.9);
-          color: #b3b8c5;
-        }
-
         .register-footer {
           border-top-color: rgba(74, 85, 104, 0.5);
 
@@ -495,10 +411,6 @@ const goToLogin = () => {
               font-size: 1.75rem;
             }
           }
-        }
-
-        .form-actions .social-login {
-          grid-template-columns: 1fr;
         }
       }
     }

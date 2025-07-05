@@ -255,7 +255,6 @@ const handleFocus = (event) => {
     // Label styling
     .q-field__label {
       font-weight: 500;
-      color: #4a5568;
       transition: all 0.3s ease;
     }
 
@@ -267,11 +266,9 @@ const handleFocus = (event) => {
     // Input styling
     .q-field__native {
       font-size: 1rem;
-      color: #2d3748;
       font-weight: 500;
 
       &::placeholder {
-        color: #a0aec0;
         font-weight: 400;
       }
     }
@@ -319,29 +316,6 @@ const handleFocus = (event) => {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     pointer-events: none;
     animation: focusRing 0.3s ease-out;
-  }
-
-  .q-field__label,
-  .q-field__native,
-  .q-field__control,
-  .q-field__prefix,
-  .q-field__suffix,
-  .q-field__prepend,
-  .q-field__append,
-  .q-icon {
-    color: #f7fafc !important;
-    fill: #f7fafc !important;
-    opacity: 1 !important;
-  }
-  input,
-  textarea {
-    color: #f7fafc !important;
-    background: transparent !important;
-    caret-color: #fff !important;
-  }
-  ::placeholder {
-    color: #b3b8c5 !important;
-    opacity: 1 !important;
   }
 }
 

@@ -25,6 +25,13 @@ const routes = [
     name: 'home',
     redirect: '/dashboard'
   },
+  {
+    path: '/profile',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', name: 'profile', component: () => import('pages/UserProfile.vue') }
+    ]
+  },
 
   // Always leave this as last one,
   // but you can also remove it
