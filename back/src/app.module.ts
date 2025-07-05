@@ -9,6 +9,7 @@ import { CommentsModule } from './comments/comments.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProjectsModule } from './projects/projects.module';
 import { HistoryModule } from './history/history.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -17,7 +18,11 @@ import { HistoryModule } from './history/history.module';
       storage: './database.sqlite',
       autoLoadModels: true,
       synchronize: true,
+      define: {
+        underscored: false,
+      },
     }),
+    AuthModule,
     TasksModule,
     UsersModule,
     RolesModule,

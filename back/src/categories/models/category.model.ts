@@ -5,6 +5,7 @@ import { TaskCategory } from './task-category.model';
 @Table({
   tableName: 'categories',
   timestamps: true,
+  paranoid: true,
 })
 export class Category extends Model {
   @Column({

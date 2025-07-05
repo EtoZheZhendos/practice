@@ -32,43 +32,43 @@ export class User extends Model {
     allowNull: false,
     unique: true,
   })
-  email: string;
+  declare email: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  password: string;
+  declare password: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  firstName: string;
+  declare firstName: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  lastName: string;
+  declare lastName: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
   })
-  avatar: string;
+  declare avatar: string;
 
   @Column({
     type: DataType.BOOLEAN,
     defaultValue: true,
   })
-  isActive: boolean;
+  declare isActive: boolean;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  lastLoginAt: Date;
+  declare lastLoginAt: Date;
 
   // Связи
   @BelongsToMany(() => Role, () => UserRole)

@@ -4,6 +4,8 @@ import { Category } from '../../categories/models/category.model';
 import { TaskCategory } from '../../categories/models/task-category.model';
 import { TaskAssignment } from './task-assignment.model';
 import { Comment } from '../../comments/models/comment.model';
+import { Project } from '../../projects/models/project.model';
+import { TaskProject } from '../../projects/models/task-project.model';
 
 @Table({
   tableName: 'tasks',
@@ -81,4 +83,7 @@ export class Task extends Model {
 
   @HasMany(() => Comment)
   comments: Comment[];
+
+  @BelongsToMany(() => Project, () => TaskProject)
+  declare projects: Project[];
 } 

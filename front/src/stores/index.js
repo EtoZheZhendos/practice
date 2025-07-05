@@ -1,6 +1,13 @@
 import { defineStore } from '#q-app/wrappers'
 import { createPinia } from 'pinia'
 
+// Import all stores
+export { useAuthStore } from './auth'
+export { useTasksStore } from './tasks'
+export { useUsersStore } from './users'
+export { useCategoriesStore } from './categories'
+export { useProjectsStore } from './projects'
+
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation;

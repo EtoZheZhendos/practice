@@ -1,10 +1,29 @@
 const routes = [
   {
+    path: '/login',
+    name: 'login',
+    component: () => import('pages/AuthLogin.vue')
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import('pages/AuthRegister.vue')
+  },
+  {
     path: '/',
+    redirect: '/dashboard'
+  },
+  {
+    path: '/dashboard',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/IndexPage.vue') }
+      { path: '', name: 'dashboard', component: () => import('pages/Dashboard.vue') }
     ]
+  },
+  {
+    path: '/home',
+    name: 'home',
+    redirect: '/dashboard'
   },
 
   // Always leave this as last one,

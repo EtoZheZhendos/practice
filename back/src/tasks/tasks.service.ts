@@ -5,6 +5,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { ITaskFilters } from './interfaces/task.interface';
 import { Op } from 'sequelize';
+import { TaskAssignment } from './models/task-assignment.model';
 
 @Injectable()
 export class TasksService {
@@ -18,6 +19,19 @@ export class TasksService {
       ...createTaskDto,
       createdById: userId,
     });
+
+    // Добавляем назначения
+    if (createTaskDto.assigneeIds && Array.isArray(createTaskDto.assigneeIds)) {
+      for (const assigneeId of createTaskDto.assigneeIds) {
+        const assignment = await TaskAssignment.create({
+          taskId: task.id,
+          userId: assigneeId,
+          status: 'assigned',
+          assignedAt: new Date(),
+        });
+        console.log('TaskAssignment created:', assignment.toJSON());
+      }
+    }
 
     // Здесь можно добавить логику для связей с категориями, проектами и назначениями
     return task;
@@ -106,5 +120,24 @@ export class TasksService {
       ],
       order: [['createdAt', 'DESC']],
     });
+  }
+
+  async findAssignedToUser(userId: number): Promise<Task[]> {
+    const assignments = await TaskAssignment.findAll({ where: { userId }, paranoid: false });
+    console.log('Assignments for user', userId, assignments.map(a => a.toJSON()));
+    const taskIds = assignments.map(a => a.taskId);
+    if (!taskIds.length) return [];
+    const tasks = await this.taskModel.findAll({
+      where: { id: taskIds },
+      include: [
+        { association: 'createdBy', attributes: ['id', 'firstName', 'lastName', 'email'] },
+        { association: 'categories' },
+        { association: 'assignments' },
+        { association: 'projects' },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
+    console.log('Tasks found for assignments:', tasks.map(t => t.toJSON()));
+    return tasks;
   }
 } 

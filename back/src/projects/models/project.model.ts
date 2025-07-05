@@ -5,6 +5,7 @@ import { TaskProject } from './task-project.model';
 @Table({
   tableName: 'projects',
   timestamps: true,
+  paranoid: true,
 })
 export class Project extends Model {
   @Column({

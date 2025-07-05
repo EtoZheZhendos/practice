@@ -4,6 +4,7 @@ import { TasksService } from './tasks.service';
 import { TasksController } from './tasks.controller';
 import { Task } from './models/task.model';
 import { TaskAssignment } from './models/task-assignment.model';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Module({
   imports: [SequelizeModule.forFeature([Task, TaskAssignment])],
