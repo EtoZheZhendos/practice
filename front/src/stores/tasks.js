@@ -205,6 +205,23 @@ export const useTasksStore = defineStore('tasks', {
       } finally {
         this.loading = false
       }
+    },
+
+    // Поиск задач
+    searchTasks(searchText) {
+      if (!searchText || searchText.trim() === '') {
+        return this.tasks
+      }
+
+      const searchLower = searchText.toLowerCase().trim()
+      return this.tasks.filter(task => {
+        return (
+          task.title?.toLowerCase().includes(searchLower) ||
+          task.description?.toLowerCase().includes(searchLower) ||
+          task.status?.toLowerCase().includes(searchLower) ||
+          task.priority?.toString().includes(searchLower)
+        )
+      })
     }
   }
 })

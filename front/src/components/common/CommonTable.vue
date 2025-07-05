@@ -220,23 +220,14 @@ watch(searchText, (newValue) => {
   emit('update:searchText', newValue)
 })
 
-// Фильтрованные строки
-const filteredRows = computed(() => {
-  if (!searchText.value) {
-    return props.rows
-  }
-
-  return props.rows.filter(row => {
-    return Object.values(row).some(value =>
-      String(value).toLowerCase().includes(searchText.value.toLowerCase())
-    )
-  })
-})
+// Используем переданные строки без дополнительной фильтрации
+const filteredRows = computed(() => props.rows)
 
 // Общее количество строк
 const totalRows = computed(() => props.rows.length)
 
 const handleSearch = (value) => {
+  searchText.value = value
   emit('search', value)
 }
 

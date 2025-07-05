@@ -311,7 +311,7 @@ const onHide = () => {
   // Body styling
   .dialog-body {
     padding: 1.5rem;
-    color: #2d3748;
+    color: #f7fafc !important;
     line-height: 1.6;
 
     // Form elements styling
@@ -319,16 +319,56 @@ const onHide = () => {
       margin-bottom: 1rem;
     }
 
-    .q-input {
-      margin-bottom: 1rem;
+    .q-field__label,
+    .q-field__native,
+    .q-field__control,
+    .q-field__marginal,
+    .q-field__bottom,
+    .q-field__prefix,
+    .q-field__suffix,
+    .q-field__prepend,
+    .q-field__append,
+    .q-icon,
+    .q-placeholder,
+    .q-select__dropdown-icon,
+    .q-select__input {
+      color: #f7fafc !important;
+      fill: #f7fafc !important;
+      opacity: 1 !important;
     }
 
-    .q-select {
-      margin-bottom: 1rem;
+    input,
+    textarea {
+      color: #f7fafc !important;
+      background: transparent !important;
+      caret-color: #fff !important;
     }
 
-    .q-textarea {
-      margin-bottom: 1rem;
+    .q-placeholder {
+      color: #b3b8c5 !important;
+      opacity: 1 !important;
+    }
+
+    ::placeholder {
+      color: #b3b8c5 !important;
+      opacity: 1 !important;
+    }
+
+    // Ошибки
+    .q-field__bottom {
+      color: #f87171 !important;
+      font-size: 0.85em;
+      margin-top: 2px;
+      margin-bottom: 0;
+      position: relative;
+      left: 0;
+      white-space: normal;
+      max-width: 100%;
+      overflow: visible;
+    }
+    .q-field--error .q-field__control {
+      border-color: #f87171 !important;
+      box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.2);
     }
   }
 
@@ -344,28 +384,24 @@ const onHide = () => {
     .q-btn {
       border-radius: 8px;
       font-weight: 600;
+      font-size: 1rem;
       transition: all 0.3s ease;
+      min-width: 120px;
+      padding: 0.5rem 1.5rem;
+    }
 
+    .q-btn--unelevated {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+      color: #fff !important;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+      border: none;
+    }
+
+    .q-btn--flat {
+      color: #fff !important;
+      background: rgba(255,255,255,0.08) !important;
       &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
-
-      &.q-btn--flat {
-        color: #718096;
-
-        &:hover {
-          background: rgba(113, 128, 150, 0.1);
-        }
-      }
-
-      &.q-btn--unelevated {
-        background: #667eea;
-        color: white;
-
-        &:hover {
-          background: #5a67d8;
-        }
+        background: rgba(255,255,255,0.18) !important;
       }
     }
   }

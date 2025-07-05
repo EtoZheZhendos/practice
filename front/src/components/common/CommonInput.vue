@@ -320,6 +320,29 @@ const handleFocus = (event) => {
     pointer-events: none;
     animation: focusRing 0.3s ease-out;
   }
+
+  .q-field__label,
+  .q-field__native,
+  .q-field__control,
+  .q-field__prefix,
+  .q-field__suffix,
+  .q-field__prepend,
+  .q-field__append,
+  .q-icon {
+    color: #f7fafc !important;
+    fill: #f7fafc !important;
+    opacity: 1 !important;
+  }
+  input,
+  textarea {
+    color: #f7fafc !important;
+    background: transparent !important;
+    caret-color: #fff !important;
+  }
+  ::placeholder {
+    color: #b3b8c5 !important;
+    opacity: 1 !important;
+  }
 }
 
 @keyframes focusRing {

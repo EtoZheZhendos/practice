@@ -36,45 +36,12 @@
               :label="notificationCount"
             />
           </q-btn>
-
-          <q-btn
-            flat
-            round
-            dense
-            icon="account_circle"
-            class="profile-btn"
-            @click="showProfileMenu = !showProfileMenu"
-          />
-
-          <q-menu
-            v-model="showProfileMenu"
-            anchor="bottom right"
-            self="top right"
-            class="profile-menu"
-          >
-            <q-list style="min-width: 150px">
-              <q-item clickable v-close-popup @click="goToProfile">
-                <q-item-section avatar>
-                  <q-icon name="person" />
-                </q-item-section>
-                <q-item-section>Профиль</q-item-section>
-              </q-item>
-              <q-item clickable v-close-popup @click="logout">
-                <q-item-section avatar>
-                  <q-icon name="logout" />
-                </q-item-section>
-                <q-item-section>Выйти</q-item-section>
-              </q-item>
-            </q-list>
-          </q-menu>
         </div>
       </q-toolbar>
     </q-header>
 
-    <!-- Sidebar -->
     <q-drawer
       v-model="leftDrawerOpen"
-      show-if-above
       bordered
       class="main-sidebar"
     >
@@ -140,23 +107,47 @@
 
       <div class="sidebar-footer">
         <div class="user-info">
-          <q-avatar class="user-avatar">
-            <q-icon name="person" />
-          </q-avatar>
+          <q-btn
+            flat
+            round
+            dense
+            icon="account_circle"
+            class="user-avatar"
+            @click="showProfileMenuSidebar = true"
+          />
           <div class="user-details">
             <div class="user-name">{{ user?.name || 'Пользователь' }}</div>
             <div class="user-role">{{ user?.role || 'Пользователь' }}</div>
           </div>
+          <q-menu
+            v-model="showProfileMenuSidebar"
+            anchor="top right"
+            self="bottom right"
+            class="profile-menu"
+          >
+            <q-list style="min-width: 150px">
+              <q-item clickable v-close-popup @click="goToProfile">
+                <q-item-section avatar>
+                  <q-icon name="person" />
+                </q-item-section>
+                <q-item-section>Профиль</q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup @click="logout">
+                <q-item-section avatar>
+                  <q-icon name="logout" />
+                </q-item-section>
+                <q-item-section>Выйти</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
         </div>
       </div>
     </q-drawer>
 
-    <!-- Main Content -->
     <q-page-container class="main-content">
       <router-view />
     </q-page-container>
 
-    <!-- Notifications Panel -->
     <q-drawer
       v-model="showNotifications"
       side="right"
@@ -202,7 +193,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'src/stores/auth'
 
@@ -211,7 +202,8 @@ const authStore = useAuthStore()
 
 const leftDrawerOpen = ref(false)
 const showNotifications = ref(false)
-const showProfileMenu = ref(false)
+const showProfileMenuTop = ref(false)
+const showProfileMenuSidebar = ref(false)
 
 const user = computed(() => authStore.user)
 
@@ -292,14 +284,20 @@ const toggleLeftDrawer = () => {
 
 const goToProfile = () => {
   router.push('/profile')
-  showProfileMenu.value = false
+  showProfileMenuTop.value = false
+  showProfileMenuSidebar.value = false
 }
 
 const logout = async () => {
   await authStore.logout()
   router.push('/login')
-  showProfileMenu.value = false
+  showProfileMenuTop.value = false
+  showProfileMenuSidebar.value = false
 }
+
+onMounted(() => {
+  leftDrawerOpen.value = false
+})
 </script>
 
 <style lang="scss" scoped>
@@ -353,8 +351,7 @@ const logout = async () => {
         align-items: center;
         gap: 0.5rem;
 
-        .notification-btn,
-        .profile-btn {
+        .notification-btn {
           color: white;
           transition: all 0.3s ease;
 
@@ -369,9 +366,8 @@ const logout = async () => {
 
   // Sidebar styling
   .main-sidebar {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    background: #f4f6fa;
+    color: #2d3748;
 
     .sidebar-header {
       padding: 1.5rem;
@@ -390,7 +386,7 @@ const logout = async () => {
         .logo-text {
           font-size: 1.25rem;
           font-weight: 700;
-          color: #2d3748;
+          color: #2d3748 !important;
           letter-spacing: -0.025em;
         }
       }
@@ -402,7 +398,7 @@ const logout = async () => {
       .menu-section-title {
         font-size: 0.75rem;
         font-weight: 600;
-        color: #718096;
+        color: #2d3748 !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         padding: 1rem 1.5rem 0.5rem;
@@ -438,18 +434,18 @@ const logout = async () => {
         }
 
         .menu-icon {
-          color: #718096;
+          color: #667eea !important;
           transition: all 0.3s ease;
         }
 
         .menu-label {
           font-weight: 500;
-          color: #2d3748;
+          color: #2d3748 !important;
           transition: all 0.3s ease;
         }
 
         .menu-caption {
-          color: #718096;
+          color: #2d3748 !important;
           transition: all 0.3s ease;
         }
       }

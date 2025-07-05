@@ -7,13 +7,6 @@
           <p class="page-subtitle">Обзор ваших задач и проектов</p>
         </div>
         <div class="header-actions">
-          <CommonButton
-            label="Новая задача"
-            icon="add"
-            color="primary"
-            variant="modern"
-            @click="showCreateTaskDialog = true"
-          />
         </div>
       </div>
     </div>
@@ -85,6 +78,17 @@
             @delete="handleDelete"
             tableClass="common-table--darkglass"
           >
+            <template #cell-priority="{ row }">
+              <span :class="getPriorityColor(row.priority)" class="priority-badge">
+                {{ getPriorityText(row.priority) }}
+              </span>
+            </template>
+
+            <template #cell-status="{ row }">
+              <span :class="getStatusColor(row.status)" class="status-badge">
+                {{ getStatusText(row.status) }}
+              </span>
+            </template>
           </CommonTable>
         </div>
 
@@ -216,7 +220,6 @@
           <CommonInput
             v-model="newTask.title"
             label="Название задачи"
-            placeholder="Введите название задачи"
             variant="modern"
             :rules="[val => !!val || 'Название обязательно']"
           />
@@ -226,7 +229,7 @@
           <CommonInput
             v-model="newTask.description"
             label="Описание"
-            placeholder="Введите описание задачи"
+
             type="textarea"
             variant="modern"
           />
@@ -305,6 +308,7 @@ const showCreateProjectDialog = ref(false)
 const creatingTask = ref(false)
 const tasksViewMode = ref('all')
 const searchText = ref('')
+const leftDrawerOpen = ref(false)
 
 const columns = ref([
   {
@@ -520,6 +524,40 @@ const priorityOptions = [
   { label: 'Критический', value: 5 }
 ]
 
+const getPriorityText = (priority) => {
+  const option = priorityOptions.find(opt => opt.value === priority)
+  return option ? option.label : 'Неизвестно'
+}
+
+const getPriorityColor = (priority) => {
+  switch (priority) {
+    case 1: return 'text-grey-6'
+    case 2: return 'text-blue-6'
+    case 3: return 'text-orange-6'
+    case 4: return 'text-red-6'
+    case 5: return 'text-red-8'
+    default: return 'text-grey-6'
+  }
+}
+
+const getStatusText = (status) => {
+  const statusMap = {
+    'pending': 'Ожидает',
+    'in_progress': 'В работе',
+    'completed': 'Завершено'
+  }
+  return statusMap[status] || status
+}
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'pending': return 'text-grey-6'
+    case 'in_progress': return 'text-blue-6'
+    case 'completed': return 'text-green-6'
+    default: return 'text-grey-6'
+  }
+}
+
 const projectOptions = computed(() => {
   return projects.value.map(project => ({
     label: project.name,
@@ -624,13 +662,13 @@ onMounted(async () => {
 })
 
 const displayedTasks = computed(() => {
+  let tasks = tasksStore.tasks
+
   if (tasksViewMode.value === 'assigned') {
-    // Фильтруем задачи на фронтенде по assigneeIds
     const currentUserId = authStore.user?.id
     console.log('Current userId:', currentUserId)
 
-    const filteredTasks = tasksStore.tasks.filter(task => {
-      // Извлекаем assigneeIds из ассоциации assignments
+    tasks = tasks.filter(task => {
       const assigneeIds = task.assignments ? task.assignments.map(a => a.userId) : []
 
       console.log(`Task ${task.id} assignments:`, task.assignments)
@@ -638,10 +676,23 @@ const displayedTasks = computed(() => {
       return assigneeIds.includes(currentUserId)
     })
 
-    console.log('Filtered assigned tasks:', filteredTasks)
-    return filteredTasks
+    console.log('Filtered assigned tasks:', tasks)
   }
-  return tasksStore.tasks
+
+  // Фильтрация по поиску
+  if (searchText.value && searchText.value.trim() !== '') {
+    const searchLower = searchText.value.toLowerCase().trim()
+    tasks = tasks.filter(task => {
+      return (
+        task.title?.toLowerCase().includes(searchLower) ||
+        task.description?.toLowerCase().includes(searchLower) ||
+        getStatusText(task.status)?.toLowerCase().includes(searchLower) ||
+        getPriorityText(task.priority)?.toLowerCase().includes(searchLower)
+      )
+    })
+  }
+
+  return tasks
 })
 
 watch(tasksViewMode, (mode) => {
@@ -662,7 +713,7 @@ watch(tasksViewMode, (mode) => {
 })
 
 const handleSearch = (text) => {
-  tasksStore.searchTasks(text)
+  searchText.value = text
 }
 
 const handleEdit = (task) => {
@@ -1081,12 +1132,10 @@ const handleDelete = (task) => {
   }
 
   // Form styles
-  .form-row {
-    margin-bottom: 1rem;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
+  .form-row,
+  .form-row * {
+    color: #f7fafc !important;
+    fill: #f7fafc !important;
   }
 
   // Dialog footer
@@ -1274,5 +1323,135 @@ const handleDelete = (task) => {
 .q-table__top .q-field__control,
 .q-table__top input {
   color: #fff !important;
+}
+
+// Priority and Status Badges
+.priority-badge,
+.status-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  line-height: 1.1;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.priority-badge {
+  &.text-grey-6 {
+    background: rgba(156, 163, 175, 0.2);
+    color: #d1d5db;
+  }
+  &.text-blue-6 {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+  }
+  &.text-orange-6 {
+    background: rgba(249, 115, 22, 0.2);
+    color: #fdba74;
+  }
+  &.text-red-6 {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+  }
+  &.text-red-8 {
+    background: rgba(185, 28, 28, 0.2);
+    color: #fecaca;
+  }
+}
+
+.status-badge {
+  &.text-grey-6 {
+    background: rgba(156, 163, 175, 0.2);
+    color: #d1d5db;
+  }
+  &.text-blue-6 {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+  }
+  &.text-green-6 {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+  }
+}
+
+.common-dialog-card .dialog-footer {
+  .q-btn {
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    padding: 0.5rem 1.5rem;
+  }
+  .q-btn--unelevated {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    border: none;
+  }
+  .q-btn--flat {
+    color: #fff !important;
+    background: rgba(255,255,255,0.08) !important;
+    &:hover {
+      background: rgba(255,255,255,0.18) !important;
+    }
+  }
+}
+
+.common-dialog-card {
+  .dialog-body {
+    color: #f7fafc !important;
+    .q-field__label,
+    .q-field__native,
+    .q-field__control,
+    .q-field__marginal,
+    .q-field__bottom {
+      color: #f7fafc !important;
+      opacity: 1 !important;
+    }
+    input,
+    textarea {
+      color: #f7fafc !important;
+      background: transparent !important;
+    }
+    ::placeholder {
+      color: #b3b8c5 !important;
+      opacity: 1 !important;
+    }
+  }
+}
+
+.common-input :deep(.q-field__label),
+.common-input :deep(.q-field__native),
+.common-input :deep(.q-field__control),
+.common-input :deep(.q-field__prefix),
+.common-input :deep(.q-field__suffix),
+.common-input :deep(.q-field__prepend),
+.common-input :deep(.q-field__append),
+.common-input :deep(.q-icon) {
+  color: #f7fafc !important;
+  fill: #f7fafc !important;
+  opacity: 1 !important;
+}
+.common-input :deep(input),
+.common-input :deep(textarea) {
+  color: #f7fafc !important;
+  background: transparent !important;
+  caret-color: #fff !important;
+}
+.common-input :deep(::placeholder) {
+  color: #b3b8c5 !important;
+  opacity: 1 !important;
 }
 </style>
