@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { api } from 'src/boot/axios'
-import { useQuasar } from 'quasar'
 
 export const useTasksStore = defineStore('tasks', {
   state: () => ({
@@ -49,6 +48,15 @@ export const useTasksStore = defineStore('tasks', {
       return filtered
     },
 
+    // Задачи для селекта
+    tasksOptions: (state) => {
+      return state.tasks.map(task => ({
+        label: task.title,
+        value: task.id,
+        description: task.description
+      }))
+    },
+
     // Задачи по статусу
     tasksByStatus: (state) => {
       const grouped = {}
@@ -57,6 +65,18 @@ export const useTasksStore = defineStore('tasks', {
           grouped[task.status] = []
         }
         grouped[task.status].push(task)
+      })
+      return grouped
+    },
+
+    // Задачи по приоритету
+    tasksByPriority: (state) => {
+      const grouped = {}
+      state.tasks.forEach(task => {
+        if (!grouped[task.priority]) {
+          grouped[task.priority] = []
+        }
+        grouped[task.priority].push(task)
       })
       return grouped
     }
@@ -100,31 +120,15 @@ export const useTasksStore = defineStore('tasks', {
     async createTask(taskData) {
       this.loading = true
       this.error = null
-      const $q = useQuasar()
 
       try {
         const response = await api.post('/tasks', taskData)
-        this.tasks.unshift(response.data)
-
-        $q.notify({
-          type: 'positive',
-          message: 'Задача успешно создана',
-          icon: 'check_circle',
-          position: 'top-right'
-        })
+        this.tasks.push(response.data)
 
         return { success: true, task: response.data }
       } catch (error) {
         console.error('Create task error:', error)
         this.error = error.response?.data?.message || 'Failed to create task'
-
-        $q.notify({
-          type: 'negative',
-          message: this.error,
-          icon: 'error',
-          position: 'top-right'
-        })
-
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -134,7 +138,6 @@ export const useTasksStore = defineStore('tasks', {
     async updateTask(id, taskData) {
       this.loading = true
       this.error = null
-      const $q = useQuasar()
 
       try {
         const response = await api.patch(`/tasks/${id}`, taskData)
@@ -150,25 +153,10 @@ export const useTasksStore = defineStore('tasks', {
           this.currentTask = response.data
         }
 
-        $q.notify({
-          type: 'positive',
-          message: 'Задача успешно обновлена',
-          icon: 'check_circle',
-          position: 'top-right'
-        })
-
         return { success: true, task: response.data }
       } catch (error) {
         console.error('Update task error:', error)
         this.error = error.response?.data?.message || 'Failed to update task'
-
-        $q.notify({
-          type: 'negative',
-          message: this.error,
-          icon: 'error',
-          position: 'top-right'
-        })
-
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -178,7 +166,6 @@ export const useTasksStore = defineStore('tasks', {
     async deleteTask(id) {
       this.loading = true
       this.error = null
-      const $q = useQuasar()
 
       try {
         await api.delete(`/tasks/${id}`)
@@ -191,25 +178,10 @@ export const useTasksStore = defineStore('tasks', {
           this.currentTask = null
         }
 
-        $q.notify({
-          type: 'positive',
-          message: 'Задача успешно удалена',
-          icon: 'check_circle',
-          position: 'top-right'
-        })
-
         return { success: true }
       } catch (error) {
         console.error('Delete task error:', error)
         this.error = error.response?.data?.message || 'Failed to delete task'
-
-        $q.notify({
-          type: 'negative',
-          message: this.error,
-          icon: 'error',
-          position: 'top-right'
-        })
-
         return { success: false, error: this.error }
       } finally {
         this.loading = false

@@ -218,6 +218,10 @@
             variant="modern"
           />
         </div>
+
+        <div class="form-actions">
+          <q-btn type="submit" label="Создать" color="primary" class="create-btn" />
+        </div>
       </CommonForm>
     </CommonDialog>
   </q-page>
@@ -226,6 +230,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { Notify } from 'quasar'
 import { useTasksStore } from 'src/stores/tasks'
 import { useUsersStore } from 'src/stores/users'
 import { useCategoriesStore } from 'src/stores/categories'
@@ -431,12 +436,31 @@ const handleDelete = async (task) => {
   try {
     const result = await tasksStore.deleteTask(task.id)
     if (result.success) {
-      console.log('Task deleted successfully')
+      Notify.create({
+        message: 'Задача успешно удалена',
+        title: 'Успех',
+        type: 'positive',
+        icon: 'check_circle',
+        position: 'top-right'
+      })
     } else {
-      console.error('Failed to delete task:', result.error)
+      Notify.create({
+        message: result.error,
+        title: 'Ошибка',
+        type: 'negative',
+        icon: 'error',
+        position: 'top-right'
+      })
     }
   } catch (error) {
     console.error('Error deleting task:', error)
+    Notify.create({
+      message: 'Ошибка при удалении задачи',
+      title: 'Ошибка',
+      type: 'negative',
+      icon: 'error',
+      position: 'top-right'
+    })
   }
 }
 
@@ -446,7 +470,13 @@ const handleRowClick = (task) => {
 
 const createTask = async () => {
   if (!newTask.value.title) {
-    console.log('Введите название задачи')
+    Notify.create({
+      message: 'Введите название задачи',
+      title: 'Предупреждение',
+      type: 'warning',
+      icon: 'warning',
+      position: 'top-right'
+    })
     return
   }
 
@@ -461,6 +491,13 @@ const createTask = async () => {
 
     const result = await tasksStore.createTask(payload)
     if (result.success) {
+      Notify.create({
+        message: 'Задача успешно создана',
+        title: 'Успех',
+        type: 'positive',
+        icon: 'check_circle',
+        position: 'top-right'
+      })
       showCreateTaskDialog.value = false
       newTask.value = {
         title: '',
@@ -472,12 +509,24 @@ const createTask = async () => {
         projectIds: [],
         categoryIds: []
       }
-      console.log('Task created successfully')
     } else {
-      console.error('Failed to create task:', result.error)
+      Notify.create({
+        message: result.error,
+        title: 'Ошибка',
+        type: 'negative',
+        icon: 'error',
+        position: 'top-right'
+      })
     }
   } catch (error) {
     console.error('Error creating task:', error)
+    Notify.create({
+      message: 'Ошибка при создании задачи',
+      title: 'Ошибка',
+      type: 'negative',
+      icon: 'error',
+      position: 'top-right'
+    })
   }
 }
 
@@ -698,6 +747,16 @@ onMounted(async () => {
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }
+  }
+
+  .create-btn {
+    margin-top: 1rem;
+    width: 100%;
+    color: #fff !important;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+    font-weight: 600;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.10);
   }
 }
 </style>

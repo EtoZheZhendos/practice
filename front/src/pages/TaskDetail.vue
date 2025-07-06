@@ -227,6 +227,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Notify } from 'quasar'
 import { useTasksStore } from 'src/stores/tasks'
 import { useUsersStore } from 'src/stores/users'
 import { useCategoriesStore } from 'src/stores/categories'
@@ -355,12 +356,31 @@ const saveTask = async () => {
     if (result.success) {
       task.value = result.task
       isEditing.value = false
-      console.log('Task updated successfully')
+      Notify.create({
+        message: 'Задача успешно обновлена',
+        title: 'Успех',
+        type: 'positive',
+        icon: 'check_circle',
+        position: 'top-right'
+      })
     } else {
-      console.error('Failed to update task:', result.error)
+      Notify.create({
+        message: result.error,
+        title: 'Ошибка',
+        type: 'negative',
+        icon: 'error',
+        position: 'top-right'
+      })
     }
   } catch (error) {
     console.error('Error updating task:', error)
+    Notify.create({
+      message: 'Ошибка при обновлении задачи',
+      title: 'Ошибка',
+      type: 'negative',
+      icon: 'error',
+      position: 'top-right'
+    })
   } finally {
     saving.value = false
   }
@@ -378,9 +398,31 @@ const addAssignment = async () => {
       task.value = result.task
       newAssignment.value = null
       showAssignDialog.value = false
+      Notify.create({
+        message: 'Назначение добавлено',
+        title: 'Успех',
+        type: 'positive',
+        icon: 'check_circle',
+        position: 'top-right'
+      })
+    } else {
+      Notify.create({
+        message: result.error,
+        title: 'Ошибка',
+        type: 'negative',
+        icon: 'error',
+        position: 'top-right'
+      })
     }
   } catch (error) {
     console.error('Error adding assignment:', error)
+    Notify.create({
+      message: 'Ошибка при добавлении назначения',
+      title: 'Ошибка',
+      type: 'negative',
+      icon: 'error',
+      position: 'top-right'
+    })
   }
 }
 
@@ -396,9 +438,31 @@ const removeAssignment = async (assignmentId) => {
     })
     if (result.success) {
       task.value = result.task
+      Notify.create({
+        message: 'Назначение удалено',
+        title: 'Успех',
+        type: 'positive',
+        icon: 'check_circle',
+        position: 'top-right'
+      })
+    } else {
+      Notify.create({
+        message: result.error,
+        title: 'Ошибка',
+        type: 'negative',
+        icon: 'error',
+        position: 'top-right'
+      })
     }
   } catch (error) {
     console.error('Error removing assignment:', error)
+    Notify.create({
+      message: 'Ошибка при удалении назначения',
+      title: 'Ошибка',
+      type: 'negative',
+      icon: 'error',
+      position: 'top-right'
+    })
   }
 }
 
@@ -414,9 +478,31 @@ const addCategory = async () => {
       task.value = result.task
       newCategory.value = null
       showCategoryDialog.value = false
+      Notify.create({
+        message: 'Категория добавлена',
+        title: 'Успех',
+        type: 'positive',
+        icon: 'check_circle',
+        position: 'top-right'
+      })
+    } else {
+      Notify.create({
+        message: result.error,
+        title: 'Ошибка',
+        type: 'negative',
+        icon: 'error',
+        position: 'top-right'
+      })
     }
   } catch (error) {
     console.error('Error adding category:', error)
+    Notify.create({
+      message: 'Ошибка при добавлении категории',
+      title: 'Ошибка',
+      type: 'negative',
+      icon: 'error',
+      position: 'top-right'
+    })
   }
 }
 
@@ -430,9 +516,31 @@ const removeCategory = async (categoryId) => {
     })
     if (result.success) {
       task.value = result.task
+      Notify.create({
+        message: 'Категория удалена',
+        title: 'Успех',
+        type: 'positive',
+        icon: 'check_circle',
+        position: 'top-right'
+      })
+    } else {
+      Notify.create({
+        message: result.error,
+        title: 'Ошибка',
+        type: 'negative',
+        icon: 'error',
+        position: 'top-right'
+      })
     }
   } catch (error) {
     console.error('Error removing category:', error)
+    Notify.create({
+      message: 'Ошибка при удалении категории',
+      title: 'Ошибка',
+      type: 'negative',
+      icon: 'error',
+      position: 'top-right'
+    })
   }
 }
 
@@ -448,9 +556,31 @@ const addProject = async () => {
       task.value = result.task
       newProject.value = null
       showProjectDialog.value = false
+      Notify.create({
+        message: 'Проект добавлен',
+        title: 'Успех',
+        type: 'positive',
+        icon: 'check_circle',
+        position: 'top-right'
+      })
+    } else {
+      Notify.create({
+        message: result.error,
+        title: 'Ошибка',
+        type: 'negative',
+        icon: 'error',
+        position: 'top-right'
+      })
     }
   } catch (error) {
     console.error('Error adding project:', error)
+    Notify.create({
+      message: 'Ошибка при добавлении проекта',
+      title: 'Ошибка',
+      type: 'negative',
+      icon: 'error',
+      position: 'top-right'
+    })
   }
 }
 
@@ -464,9 +594,31 @@ const removeProject = async (projectId) => {
     })
     if (result.success) {
       task.value = result.task
+      Notify.create({
+        message: 'Проект удален',
+        title: 'Успех',
+        type: 'positive',
+        icon: 'check_circle',
+        position: 'top-right'
+      })
+    } else {
+      Notify.create({
+        message: result.error,
+        title: 'Ошибка',
+        type: 'negative',
+        icon: 'error',
+        position: 'top-right'
+      })
     }
   } catch (error) {
     console.error('Error removing project:', error)
+    Notify.create({
+      message: 'Ошибка при удалении проекта',
+      title: 'Ошибка',
+      type: 'negative',
+      icon: 'error',
+      position: 'top-right'
+    })
   }
 }
 

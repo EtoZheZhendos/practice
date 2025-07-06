@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { api } from 'src/boot/axios'
-import { useQuasar } from 'quasar'
 
 export const useProjectsStore = defineStore('projects', {
   state: () => ({
@@ -81,31 +80,24 @@ export const useProjectsStore = defineStore('projects', {
     async createProject(projectData) {
       this.loading = true
       this.error = null
-      const $q = useQuasar()
 
       try {
-        const response = await api.post('/projects', projectData)
-        this.projects.push(response.data)
+        // Transform field names to match backend DTO
+        const transformedData = {
+          name: projectData.name,
+          description: projectData.description,
+          status: projectData.status,
+          start_date: projectData.startDate,
+          end_date: projectData.endDate
+        }
 
-        $q.notify({
-          type: 'positive',
-          message: 'Проект успешно создан',
-          icon: 'check_circle',
-          position: 'top-right'
-        })
+        const response = await api.post('/projects', transformedData)
+        this.projects.push(response.data)
 
         return { success: true, project: response.data }
       } catch (error) {
         console.error('Create project error:', error)
         this.error = error.response?.data?.message || 'Failed to create project'
-
-        $q.notify({
-          type: 'negative',
-          message: this.error,
-          icon: 'error',
-          position: 'top-right'
-        })
-
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -115,10 +107,18 @@ export const useProjectsStore = defineStore('projects', {
     async updateProject(id, projectData) {
       this.loading = true
       this.error = null
-      const $q = useQuasar()
 
       try {
-        const response = await api.patch(`/projects/${id}`, projectData)
+        // Transform field names to match backend DTO
+        const transformedData = {
+          name: projectData.name,
+          description: projectData.description,
+          status: projectData.status,
+          start_date: projectData.startDate,
+          end_date: projectData.endDate
+        }
+
+        const response = await api.patch(`/projects/${id}`, transformedData)
 
         // Обновляем проект в списке
         const index = this.projects.findIndex(project => project.id === id)
@@ -131,25 +131,10 @@ export const useProjectsStore = defineStore('projects', {
           this.currentProject = response.data
         }
 
-        $q.notify({
-          type: 'positive',
-          message: 'Проект успешно обновлен',
-          icon: 'check_circle',
-          position: 'top-right'
-        })
-
         return { success: true, project: response.data }
       } catch (error) {
         console.error('Update project error:', error)
         this.error = error.response?.data?.message || 'Failed to update project'
-
-        $q.notify({
-          type: 'negative',
-          message: this.error,
-          icon: 'error',
-          position: 'top-right'
-        })
-
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -159,7 +144,6 @@ export const useProjectsStore = defineStore('projects', {
     async deleteProject(id) {
       this.loading = true
       this.error = null
-      const $q = useQuasar()
 
       try {
         await api.delete(`/projects/${id}`)
@@ -172,25 +156,10 @@ export const useProjectsStore = defineStore('projects', {
           this.currentProject = null
         }
 
-        $q.notify({
-          type: 'positive',
-          message: 'Проект успешно удален',
-          icon: 'check_circle',
-          position: 'top-right'
-        })
-
         return { success: true }
       } catch (error) {
         console.error('Delete project error:', error)
         this.error = error.response?.data?.message || 'Failed to delete project'
-
-        $q.notify({
-          type: 'negative',
-          message: this.error,
-          icon: 'error',
-          position: 'top-right'
-        })
-
         return { success: false, error: this.error }
       } finally {
         this.loading = false

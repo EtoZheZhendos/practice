@@ -46,6 +46,13 @@ const routes = [
       { path: '', name: 'tasks', component: () => import('pages/Tasks.vue') }
     ]
   },
+  {
+    path: '/projects',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', name: 'projects', component: () => import('pages/Projects.vue') }
+    ]
+  },
 
   // Always leave this as last one,
   // but you can also remove it

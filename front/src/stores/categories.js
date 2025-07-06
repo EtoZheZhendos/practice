@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { api } from 'src/boot/axios'
-import { useQuasar } from 'quasar'
 
 export const useCategoriesStore = defineStore('categories', {
   state: () => ({
@@ -64,31 +63,15 @@ export const useCategoriesStore = defineStore('categories', {
     async createCategory(categoryData) {
       this.loading = true
       this.error = null
-      const $q = useQuasar()
 
       try {
         const response = await api.post('/categories', categoryData)
         this.categories.push(response.data)
 
-        $q.notify({
-          type: 'positive',
-          message: 'Категория успешно создана',
-          icon: 'check_circle',
-          position: 'top-right'
-        })
-
         return { success: true, category: response.data }
       } catch (error) {
         console.error('Create category error:', error)
         this.error = error.response?.data?.message || 'Failed to create category'
-
-        $q.notify({
-          type: 'negative',
-          message: this.error,
-          icon: 'error',
-          position: 'top-right'
-        })
-
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -98,7 +81,6 @@ export const useCategoriesStore = defineStore('categories', {
     async updateCategory(id, categoryData) {
       this.loading = true
       this.error = null
-      const $q = useQuasar()
 
       try {
         const response = await api.patch(`/categories/${id}`, categoryData)
@@ -114,25 +96,10 @@ export const useCategoriesStore = defineStore('categories', {
           this.currentCategory = response.data
         }
 
-        $q.notify({
-          type: 'positive',
-          message: 'Категория успешно обновлена',
-          icon: 'check_circle',
-          position: 'top-right'
-        })
-
         return { success: true, category: response.data }
       } catch (error) {
         console.error('Update category error:', error)
         this.error = error.response?.data?.message || 'Failed to update category'
-
-        $q.notify({
-          type: 'negative',
-          message: this.error,
-          icon: 'error',
-          position: 'top-right'
-        })
-
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -142,7 +109,6 @@ export const useCategoriesStore = defineStore('categories', {
     async deleteCategory(id) {
       this.loading = true
       this.error = null
-      const $q = useQuasar()
 
       try {
         await api.delete(`/categories/${id}`)
@@ -155,25 +121,10 @@ export const useCategoriesStore = defineStore('categories', {
           this.currentCategory = null
         }
 
-        $q.notify({
-          type: 'positive',
-          message: 'Категория успешно удалена',
-          icon: 'check_circle',
-          position: 'top-right'
-        })
-
         return { success: true }
       } catch (error) {
         console.error('Delete category error:', error)
         this.error = error.response?.data?.message || 'Failed to delete category'
-
-        $q.notify({
-          type: 'negative',
-          message: this.error,
-          icon: 'error',
-          position: 'top-right'
-        })
-
         return { success: false, error: this.error }
       } finally {
         this.loading = false
