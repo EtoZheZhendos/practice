@@ -43,6 +43,7 @@
       :style="tableStyle"
       @request="handleRequest"
       @selection="handleSelection"
+      @row-click="handleRowClick"
     >
       <!-- Custom slots for columns -->
       <template v-for="column in columns" :key="column.name" #[`body-cell-${column.name}`]="props">
@@ -245,6 +246,10 @@ const handleEdit = (row) => {
 
 const handleDelete = (row) => {
   emit('delete', row)
+}
+
+const handleRowClick = (evt, row) => {
+  emit('row-click', row)
 }
 </script>
 

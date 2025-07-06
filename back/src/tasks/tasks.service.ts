@@ -74,7 +74,10 @@ export class TasksService {
       include: [
         { association: 'createdBy', attributes: ['id', 'firstName', 'lastName', 'email'] },
         { association: 'categories' },
-        { association: 'assignments' },
+        { 
+          association: 'assignments',
+          include: [{ association: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] }]
+        },
         { association: 'projects' },
       ],
       order: [['createdAt', 'DESC']],
@@ -86,7 +89,10 @@ export class TasksService {
       include: [
         { association: 'createdBy', attributes: ['id', 'firstName', 'lastName', 'email'] },
         { association: 'categories' },
-        { association: 'assignments' },
+        { 
+          association: 'assignments',
+          include: [{ association: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] }]
+        },
         { association: 'comments' },
         { association: 'projects' },
       ],
@@ -102,7 +108,37 @@ export class TasksService {
   async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
     const task = await this.findOne(id);
     await task.update(updateTaskDto);
-    return task;
+
+    // Обновляем назначения
+    if (updateTaskDto.assigneeIds !== undefined) {
+      // Удаляем все существующие назначения
+      await TaskAssignment.destroy({ where: { taskId: id } });
+      
+      // Добавляем новые назначения
+      if (Array.isArray(updateTaskDto.assigneeIds)) {
+        for (const assigneeId of updateTaskDto.assigneeIds) {
+          await TaskAssignment.create({
+            taskId: id,
+            userId: assigneeId,
+            status: 'assigned',
+            assignedAt: new Date(),
+          });
+        }
+      }
+    }
+
+    // Обновляем связи с категориями
+    if (updateTaskDto.categoryIds !== undefined) {
+      await task.$set('categories', updateTaskDto.categoryIds || []);
+    }
+
+    // Обновляем связи с проектами
+    if (updateTaskDto.projectIds !== undefined) {
+      await task.$set('projects', updateTaskDto.projectIds || []);
+    }
+
+    // Возвращаем обновленную задачу с включенными связями
+    return this.findOne(id);
   }
 
   async remove(id: number): Promise<void> {
@@ -116,7 +152,10 @@ export class TasksService {
       include: [
         { association: 'createdBy', attributes: ['id', 'firstName', 'lastName', 'email'] },
         { association: 'categories' },
-        { association: 'assignments' },
+        { 
+          association: 'assignments',
+          include: [{ association: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] }]
+        },
       ],
       order: [['createdAt', 'DESC']],
     });
@@ -132,7 +171,10 @@ export class TasksService {
       include: [
         { association: 'createdBy', attributes: ['id', 'firstName', 'lastName', 'email'] },
         { association: 'categories' },
-        { association: 'assignments' },
+        { 
+          association: 'assignments',
+          include: [{ association: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] }]
+        },
         { association: 'projects' },
       ],
       order: [['createdAt', 'DESC']],

@@ -61,8 +61,8 @@
           v-for="link in essentialLinks"
           :key="link.title"
           clickable
-          tag="a"
-          :href="link.link"
+          tag="router-link"
+          :to="link.link"
           :class="{ 'menu-item--active': $route.path === link.link }"
           class="menu-item"
         >
@@ -88,8 +88,8 @@
           v-for="link in additionalLinks"
           :key="link.title"
           clickable
-          tag="a"
-          :href="link.link"
+          tag="router-link"
+          :to="link.link"
           class="menu-item"
         >
           <q-item-section avatar>
@@ -293,6 +293,14 @@ const logout = async () => {
   router.push('/login')
   showProfileMenuTop.value = false
   showProfileMenuSidebar.value = false
+}
+
+const addNotification = (notification) => {
+  notifications.value.unshift({
+    id: Date.now(),
+    ...notification
+  })
+  notificationCount.value = notifications.value.length
 }
 
 onMounted(() => {

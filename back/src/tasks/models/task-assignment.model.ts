@@ -1,4 +1,4 @@
-import { Column, DataType, Model, Table, ForeignKey } from 'sequelize-typescript';
+import { Column, DataType, Model, Table, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { User } from '../../users/models/user.model';
 import { Task } from './task.model';
 
@@ -57,4 +57,11 @@ export class TaskAssignment extends Model {
     allowNull: true,
   })
   acceptedAt: Date;
+
+  // Связи
+  @BelongsTo(() => User)
+  user: User;
+
+  @BelongsTo(() => Task)
+  task: Task;
 } 

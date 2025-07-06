@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { api } from 'src/boot/axios'
+import { useQuasar } from 'quasar'
 
 export const useUsersStore = defineStore('users', {
   state: () => ({
@@ -75,14 +76,31 @@ export const useUsersStore = defineStore('users', {
     async createUser(userData) {
       this.loading = true
       this.error = null
+      const $q = useQuasar()
 
       try {
         const response = await api.post('/users', userData)
         this.users.push(response.data)
+
+        $q.notify({
+          type: 'positive',
+          message: 'Пользователь успешно создан',
+          icon: 'check_circle',
+          position: 'top-right'
+        })
+
         return { success: true, user: response.data }
       } catch (error) {
         console.error('Create user error:', error)
         this.error = error.response?.data?.message || 'Failed to create user'
+
+        $q.notify({
+          type: 'negative',
+          message: this.error,
+          icon: 'error',
+          position: 'top-right'
+        })
+
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -92,6 +110,7 @@ export const useUsersStore = defineStore('users', {
     async updateUser(id, userData) {
       this.loading = true
       this.error = null
+      const $q = useQuasar()
 
       try {
         const response = await api.patch(`/users/${id}`, userData)
@@ -107,10 +126,25 @@ export const useUsersStore = defineStore('users', {
           this.currentUser = response.data
         }
 
+        $q.notify({
+          type: 'positive',
+          message: 'Пользователь успешно обновлен',
+          icon: 'check_circle',
+          position: 'top-right'
+        })
+
         return { success: true, user: response.data }
       } catch (error) {
         console.error('Update user error:', error)
         this.error = error.response?.data?.message || 'Failed to update user'
+
+        $q.notify({
+          type: 'negative',
+          message: this.error,
+          icon: 'error',
+          position: 'top-right'
+        })
+
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -120,6 +154,7 @@ export const useUsersStore = defineStore('users', {
     async deleteUser(id) {
       this.loading = true
       this.error = null
+      const $q = useQuasar()
 
       try {
         await api.delete(`/users/${id}`)
@@ -132,10 +167,25 @@ export const useUsersStore = defineStore('users', {
           this.currentUser = null
         }
 
+        $q.notify({
+          type: 'positive',
+          message: 'Пользователь успешно удален',
+          icon: 'check_circle',
+          position: 'top-right'
+        })
+
         return { success: true }
       } catch (error) {
         console.error('Delete user error:', error)
         this.error = error.response?.data?.message || 'Failed to delete user'
+
+        $q.notify({
+          type: 'negative',
+          message: this.error,
+          icon: 'error',
+          position: 'top-right'
+        })
+
         return { success: false, error: this.error }
       } finally {
         this.loading = false

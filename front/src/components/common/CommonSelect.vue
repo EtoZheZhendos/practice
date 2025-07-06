@@ -301,7 +301,7 @@ const handleFocus = (event) => {
     // Label styling
     .q-field__label {
       font-weight: 500;
-      color: #4a5568;
+      color: #fff !important;
       transition: all 0.3s ease;
     }
 
@@ -313,12 +313,12 @@ const handleFocus = (event) => {
     // Input styling
     .q-field__native {
       font-size: 1rem;
-      color: #2d3748;
+      color: #fff !important;
       font-weight: 500;
 
       &::placeholder {
-        color: #a0aec0;
-        font-weight: 400;
+        color: #fff !important;
+        opacity: 0.7;
       }
     }
 

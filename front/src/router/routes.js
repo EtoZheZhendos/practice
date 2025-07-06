@@ -32,6 +32,20 @@ const routes = [
       { path: '', name: 'profile', component: () => import('pages/UserProfile.vue') }
     ]
   },
+  {
+    path: '/task/:id',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', name: 'task-detail', component: () => import('pages/TaskDetail.vue') }
+    ]
+  },
+  {
+    path: '/tasks',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', name: 'tasks', component: () => import('pages/Tasks.vue') }
+    ]
+  },
 
   // Always leave this as last one,
   // but you can also remove it

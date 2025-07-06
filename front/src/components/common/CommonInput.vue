@@ -256,6 +256,7 @@ const handleFocus = (event) => {
     .q-field__label {
       font-weight: 500;
       transition: all 0.3s ease;
+      color: #fff !important;
     }
 
     &.q-field--focused .q-field__label {
@@ -267,9 +268,12 @@ const handleFocus = (event) => {
     .q-field__native {
       font-size: 1rem;
       font-weight: 500;
+      color: #fff !important;
 
       &::placeholder {
         font-weight: 400;
+        color: #fff !important;
+        opacity: 0.7;
       }
     }
 
