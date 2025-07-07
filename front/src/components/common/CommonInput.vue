@@ -360,10 +360,16 @@ const handleFocus = (event) => {
         color: #f7fafc;
 
         &::placeholder {
-          color: #718096;
+          color: #ffffff;
         }
       }
     }
   }
+}
+</style>
+
+<style lang="scss">
+.q-field__native {
+  color: #fff !important;
 }
 </style>

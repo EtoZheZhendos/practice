@@ -484,7 +484,7 @@ const handleFocus = (event) => {
         color: #f7fafc;
 
         &::placeholder {
-          color: #718096;
+          color: #ffffff;
         }
       }
     }
@@ -498,11 +498,11 @@ const handleFocus = (event) => {
         border-bottom-color: rgba(74, 85, 104, 0.3);
 
         &:hover {
-          background: rgba(102, 126, 234, 0.2);
+          background: rgba(247, 245, 245, 0.2);
         }
 
         &.q-item--no-option {
-          color: #a0aec0;
+          color: #ffffff;
         }
       }
     }
@@ -549,5 +549,15 @@ const handleFocus = (event) => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+</style>
+
+<style lang="scss">
+.q-field__native {
+  color: #fff !important;
+}
+
+.q-field__label {
+  color: #fff !important;
 }
 </style>

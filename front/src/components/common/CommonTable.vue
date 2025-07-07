@@ -701,3 +701,9 @@ const handleRowClick = (evt, row) => {
   }
 }
 </style>
+
+<style lang="scss">
+.q-table th, .q-table td {
+  color: #fff !important;
+}
+</style>

@@ -51,159 +51,57 @@
       </div>
 
       <div v-else-if="task" class="task-content">
-        <div class="task-flex-grid">
-          <!-- Основная информация -->
-          <CommonCard variant="modern" class="task-card main-info-card">
-            <template #header>
-              <div class="card-header">
-                <h3 class="card-title">
-                  <q-icon name="info" class="title-icon" />
-                  Основная информация
-                </h3>
+        <div class="task-main-center-container">
+          <div class="task-main-dark-bg">
+            <div class="task-info-auth-card no-bg">
+              <div class="task-info-header">
+                <q-icon name="info" size="md" color="primary" class="info-icon" />
+                <span>Основная информация</span>
               </div>
-            </template>
-            <div class="info-grid">
-              <div class="info-item">
-                <label class="info-label">Название</label>
-                <div v-if="!isEditing" class="info-value">{{ task.title }}</div>
-                <CommonInput v-else v-model="editForm.title" label="Название" variant="modern" :rules="[val => !!val || 'Название обязательно']" class="edit-input" />
+              <div v-if="!isEditing" class="task-info-list">
+                <div class="task-info-row"><span class="info-label">Название</span><span class="info-value">{{ task.title }}</span></div>
+                <div class="task-info-row"><span class="info-label">Описание</span><span class="info-value description-text">{{ task.description || 'Описание не указано' }}</span></div>
+                <div class="task-info-row"><span class="info-label">Статус</span><span class="info-value"><span :class="getStatusColor(task.status)" class="status-badge">{{ getStatusText(task.status) }}</span></span></div>
+                <div class="task-info-row"><span class="info-label">Приоритет</span><span class="info-value"><span :class="getPriorityColor(task.priority)" class="priority-badge">{{ getPriorityText(task.priority) }}</span></span></div>
+                <div class="task-info-row"><span class="info-label">Срок выполнения</span><span class="info-value">{{ task.dueDate ? formatDate(task.dueDate) : 'Не указан' }}</span></div>
+                <div class="task-info-row"><span class="info-label">Создана</span><span class="info-value">{{ formatDate(task.createdAt) }}</span></div>
               </div>
-              <div class="info-item">
-                <label class="info-label">Описание</label>
-                <div v-if="!isEditing" class="info-value description-text">{{ task.description || 'Описание не указано' }}</div>
-                <CommonInput v-else v-model="editForm.description" label="Описание" type="textarea" variant="modern" class="edit-textarea" />
-              </div>
-              <div class="info-item">
-                <label class="info-label">Статус</label>
-                <div v-if="!isEditing" class="info-value">
-                  <span :class="getStatusColor(task.status)" class="status-badge">{{ getStatusText(task.status) }}</span>
+              <form v-else class="task-info-list task-edit-form" @submit.prevent="saveTask">
+                <div class="task-info-row"><span class="info-label">Название</span><span class="info-value"><CommonInput v-model="editForm.title" label="Название" variant="modern" :rules="[val => !!val || 'Название обязательно']" class="edit-input" /></span></div>
+                <div class="task-info-row"><span class="info-label">Описание</span><span class="info-value"><CommonInput v-model="editForm.description" label="Описание" type="textarea" variant="modern" class="edit-textarea" /></span></div>
+                <div class="task-info-row"><span class="info-label">Статус</span><span class="info-value"><CommonSelect v-model="editForm.status" :options="statusOptions" label="Статус" variant="modern" class="edit-select" /></span></div>
+                <div class="task-info-row"><span class="info-label">Приоритет</span><span class="info-value"><CommonSelect v-model="editForm.priority" :options="priorityOptions" label="Приоритет" variant="modern" class="edit-select" /></span></div>
+                <div class="task-info-row"><span class="info-label">Срок выполнения</span><span class="info-value"><CommonInput v-model="editForm.dueDate" label="Срок выполнения" type="date" variant="modern" class="edit-input" /></span></div>
+                <div class="task-edit-actions">
+                  <q-btn color="positive" label="Сохранить" icon="save" type="submit" :loading="saving" class="q-mr-sm" />
+                  <q-btn flat color="grey" label="Отмена" icon="close" @click="cancelEditing" />
                 </div>
-                <CommonSelect v-else v-model="editForm.status" :options="statusOptions" label="Статус" variant="modern" class="edit-select" />
-              </div>
-              <div class="info-item">
-                <label class="info-label">Приоритет</label>
-                <div v-if="!isEditing" class="info-value">
-                  <span :class="getPriorityColor(task.priority)" class="priority-badge">{{ getPriorityText(task.priority) }}</span>
+              </form>
+            </div>
+            <div v-if="task.assignments && task.assignments.length" class="task-user-card styled-user-card">
+              <div v-if="!isEditing">
+                <div class="user-header">
+                  <q-icon name="person" size="md" color="primary" class="user-icon" />
+                  <span>Исполнитель</span>
                 </div>
-                <CommonSelect v-else v-model="editForm.priority" :options="priorityOptions" label="Приоритет" variant="modern" class="edit-select" />
-              </div>
-              <div class="info-item">
-                <label class="info-label">Срок выполнения</label>
-                <div v-if="!isEditing" class="info-value">{{ task.dueDate ? formatDate(task.dueDate) : 'Не указан' }}</div>
-                <CommonInput v-else v-model="editForm.dueDate" label="Срок выполнения" type="date" variant="modern" class="edit-input" />
-              </div>
-              <div class="info-item">
-                <label class="info-label">Создана</label>
-                <div class="info-value">{{ formatDate(task.createdAt) }}</div>
-              </div>
-            </div>
-            <div v-if="isEditing" class="card-actions" style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
-              <q-btn color="positive" label="Сохранить" icon="save" @click="saveTask" :loading="saving" />
-              <q-btn flat color="grey" label="Отмена" icon="close" @click="cancelEditing" />
-            </div>
-          </CommonCard>
-
-          <!-- Назначения -->
-          <CommonCard variant="modern" class="task-card assignments-card">
-            <template #header>
-              <div class="card-header">
-                <h3 class="card-title">
-                  <q-icon name="people" class="title-icon" />
-                  Назначения
-                </h3>
-                <q-btn v-if="isEditing" flat round dense icon="add" class="add-assignee-btn" @click="showAssignDialog = true" />
-              </div>
-            </template>
-            <div class="assignments-list">
-              <div v-for="assignment in task.assignments" :key="assignment.id" class="assignment-item">
-                <div class="assignment-info">
-                  <q-avatar size="32px" color="primary"><q-icon name="person" color="white" /></q-avatar>
-                  <div class="assignment-details">
-                    <div class="assignee-name">{{ assignment.user?.firstName }} {{ assignment.user?.lastName }}</div>
-                    <div class="assignment-date">Назначен: {{ formatDate(assignment.assignedAt) }}</div>
+                <div class="user-info-row">
+                  <q-avatar size="48px" color="primary"><q-icon name="person" color="white" /></q-avatar>
+                  <div class="user-details">
+                    <div class="user-name">{{ task.assignments[0].user?.firstName }} {{ task.assignments[0].user?.lastName }}</div>
+                    <div class="user-email">{{ task.assignments[0].user?.email }}</div>
+                    <div class="user-date">Назначен: {{ formatDate(task.assignments[0].assignedAt) }}</div>
                   </div>
                 </div>
-                <q-btn v-if="isEditing" flat round dense icon="remove" color="negative" size="sm" @click="removeAssignment(assignment.id)" />
               </div>
-              <div v-if="!task.assignments?.length" class="no-assignments">
-                <q-icon name="people_outline" size="2rem" color="grey-4" />
-                <span class="no-assignments-text">Нет назначений</span>
-              </div>
-            </div>
-            <CommonDialog v-model="showAssignDialog" title="Добавить назначение" @confirm="addAssignment">
-              <CommonSelect v-model="newAssignment" :options="availableUsers" placeholder="Выберите пользователя" label="Пользователь" />
-            </CommonDialog>
-          </CommonCard>
-
-          <!-- Категории -->
-          <CommonCard variant="modern" class="task-card categories-card">
-            <template #header>
-              <div class="card-header">
-                <h3 class="card-title">
-                  <q-icon name="category" class="title-icon" />
-                  Категории
-                </h3>
-                <q-btn
-                  v-if="isEditing"
-                  flat
-                  round
-                  dense
-                  icon="add"
-                  class="add-category-btn"
-                  @click="showCategoryDialog = true"
-                />
-              </div>
-            </template>
-
-            <div class="categories-list">
-              <div
-                v-for="category in task.categories"
-                :key="category.id"
-                class="category-item"
-              >
-                <q-chip
-                  :color="category.color || 'primary'"
-                  text-color="white"
-                  :label="category.name"
-                  removable
-                  @remove="isEditing && removeCategory(category.id)"
-                />
-              </div>
-              <div v-if="!task.categories?.length" class="no-categories">
-                <q-icon name="category_outline" size="2rem" color="grey-4" />
-                <span class="no-categories-text">Нет категорий</span>
-              </div>
-            </div>
-          </CommonCard>
-
-          <!-- Проекты -->
-          <CommonCard variant="modern" class="task-card projects-card">
-            <template #header>
-              <div class="card-header">
-                <h3 class="card-title">
-                  <q-icon name="folder" class="title-icon" />
-                  Проекты
-                </h3>
-                <q-btn v-if="isEditing" flat round dense icon="add" class="add-project-btn" @click="showProjectDialog = true" />
-              </div>
-            </template>
-            <div class="projects-list">
-              <div v-for="project in task.projects" :key="project.id" class="project-item">
-                <div class="project-info">
-                  <q-icon name="folder" color="primary" />
-                  <span class="project-name">{{ project.name }}</span>
+              <form v-else class="user-edit-form" @submit.prevent>
+                <div class="user-header">
+                  <q-icon name="person" size="md" color="primary" class="user-icon" />
+                  <span>Исполнитель</span>
                 </div>
-                <q-btn v-if="isEditing" flat round dense icon="remove" color="negative" size="sm" @click="removeProject(project.id)" />
-              </div>
-              <div v-if="!task.projects?.length" class="no-projects">
-                <q-icon name="folder_outline" size="2rem" color="grey-4" />
-                <span class="no-projects-text">Нет проектов</span>
-              </div>
+                <CommonSelect v-model="editForm.assigneeId" :options="availableUsers" label="Исполнитель" variant="modern" class="edit-select" />
+              </form>
             </div>
-            <CommonDialog v-model="showProjectDialog" title="Добавить проект" @confirm="addProject">
-              <CommonSelect v-model="newProject" :options="availableProjects" placeholder="Выберите проект" label="Проект" />
-            </CommonDialog>
-          </CommonCard>
+          </div>
         </div>
       </div>
 
@@ -265,7 +163,8 @@ const editForm = ref({
   description: '',
   status: '',
   priority: null,
-  dueDate: ''
+  dueDate: '',
+  assigneeId: null
 })
 
 // Опции для селектов
@@ -333,7 +232,8 @@ const initEditForm = () => {
       description: task.value.description || '',
       status: task.value.status,
       priority: task.value.priority,
-      dueDate: task.value.dueDate ? task.value.dueDate.split('T')[0] : ''
+      dueDate: task.value.dueDate ? task.value.dueDate.split('T')[0] : '',
+      assigneeId: task.value.assignments && task.value.assignments.length ? task.value.assignments[0].userId : null
     }
   }
 }
@@ -352,7 +252,12 @@ const cancelEditing = () => {
 const saveTask = async () => {
   saving.value = true
   try {
-    const result = await tasksStore.updateTask(task.value.id, editForm.value)
+    const payload = { ...editForm.value }
+    if (payload.assigneeId) {
+      payload.assigneeIds = [payload.assigneeId]
+      delete payload.assigneeId
+    }
+    const result = await tasksStore.updateTask(task.value.id, payload)
     if (result.success) {
       task.value = result.task
       isEditing.value = false
@@ -766,6 +671,80 @@ watch(() => route.params.id, () => {
   }
 }
 
+.task-main-center-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 70vh;
+  width: 100%;
+}
+.task-main-dark-bg {
+  background: rgba(20, 22, 34, 0.92);
+  border-radius: 32px;
+  box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.22);
+  padding: 3.5rem 3.5rem 2.5rem 3.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.2rem;
+  min-width: 420px;
+  max-width: 540px;
+  margin: 0 auto;
+}
+.task-info-auth-card.no-bg {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 0;
+}
+.styled-user-card {
+  background: rgba(30, 32, 48, 0.98);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.22);
+  padding: 1.7rem 2.2rem;
+  color: #fff;
+  min-width: 320px;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .user-header {
+    display: flex;
+    align-items: center;
+    font-size: 1.13rem;
+    font-weight: 600;
+    margin-bottom: 1.3rem;
+    color: #fff;
+    .user-icon {
+      margin-right: 0.75rem;
+    }
+  }
+  .user-info-row {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.22rem;
+      .user-name {
+        font-weight: 600;
+        font-size: 1.09rem;
+      }
+      .user-email {
+        font-size: 0.99rem;
+        color: #b3b8c5;
+      }
+      .user-date {
+        font-size: 0.94rem;
+        color: #b3b8c5;
+      }
+    }
+  }
+}
+
 .status-badge,
 .priority-badge {
   display: inline-block;
@@ -785,5 +764,160 @@ watch(() => route.params.id, () => {
 .priority-badge {
   background: rgba(237, 137, 54, 0.1);
   color: #ed8936;
+}
+
+.task-info-auth-card {
+  background: rgba(30, 32, 48, 0.92);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  padding: 2.2rem 2.7rem 1.7rem 2.7rem;
+  margin-bottom: 2rem;
+  color: #fff;
+  min-width: 340px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: box-shadow 0.25s, transform 0.25s;
+  &:hover {
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.28);
+    transform: translateY(-2px) scale(1.01);
+  }
+  .task-info-header {
+    display: flex;
+    align-items: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: #fff;
+    .info-icon {
+      margin-right: 0.85rem;
+    }
+  }
+  .task-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+  }
+  .task-info-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    align-items: center;
+    font-size: 1.12rem;
+    padding: 0.2rem 0.1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    &:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #b3b8c5;
+      text-align: right;
+      padding-right: 1.7rem;
+      letter-spacing: 0.01em;
+      font-size: 1.08rem;
+      min-width: 120px;
+      flex-shrink: 0;
+    }
+    .info-value {
+      color: #fff;
+      font-weight: 500;
+      text-align: left;
+      word-break: break-word;
+      font-size: 1.11rem;
+      padding-left: 0.5rem;
+    }
+    .description-text {
+      font-style: italic;
+      opacity: 0.85;
+    }
+  }
+}
+.task-user-card {
+  background: rgba(30, 32, 48, 0.92);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  padding: 1.7rem 2.2rem;
+  margin-bottom: 2rem;
+  color: #fff;
+  min-width: 340px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: box-shadow 0.25s, transform 0.25s;
+  &:hover {
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.28);
+    transform: translateY(-2px) scale(1.01);
+  }
+  .user-header {
+    display: flex;
+    align-items: center;
+    font-size: 1.13rem;
+    font-weight: 600;
+    margin-bottom: 1.3rem;
+    color: #fff;
+    .user-icon {
+      margin-right: 0.75rem;
+    }
+  }
+  .user-info-row {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.22rem;
+      .user-name {
+        font-weight: 600;
+        font-size: 1.09rem;
+      }
+      .user-email {
+        font-size: 0.99rem;
+        color: #b3b8c5;
+      }
+      .user-date {
+        font-size: 0.94rem;
+        color: #b3b8c5;
+      }
+    }
+  }
+}
+
+.task-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  .task-info-row {
+    align-items: flex-start;
+    .info-label {
+      padding-top: 0.45rem;
+    }
+    .info-value {
+      width: 100%;
+      .edit-input, .edit-select, .edit-textarea {
+        width: 100%;
+        min-width: 180px;
+        max-width: 260px;
+      }
+    }
+  }
+}
+.task-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.1rem;
+  margin-top: 1.5rem;
+}
+
+.user-edit-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  .edit-select {
+    width: 100%;
+    min-width: 180px;
+    max-width: 260px;
+  }
 }
 </style>

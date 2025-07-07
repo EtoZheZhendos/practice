@@ -25,7 +25,6 @@
             <CommonInput
               v-model="filters.search"
               label="Поиск"
-              placeholder="Поиск по названию или описанию..."
               icon="search"
               inputClass="text-white"
               @update:model-value="applyFilters"
@@ -36,7 +35,7 @@
               v-model="filters.status"
               :options="statusOptions"
               label="Статус"
-              placeholder="Все статусы"
+              placeolder="Все статусы"
               clearable
               @update:model-value="applyFilters"
             />
