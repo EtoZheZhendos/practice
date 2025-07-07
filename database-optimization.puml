@@ -1,0 +1,274 @@
+@startuml TaskManager Database Optimization
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam database {
+  BackgroundColor #E8F5E8
+  BorderColor #388E3C
+  FontColor #1B5E20
+}
+skinparam component {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+  FontColor #1565C0
+}
+skinparam cloud {
+  BackgroundColor #F3E5F5
+  BorderColor #7B1FA2
+  FontColor #4A148C
+}
+
+title Оптимизация базы данных TaskManager
+
+package "Основные таблицы" {
+  database "users" {
+    [id] as users_id <<PK>>
+    [email] as users_email <<UNIQUE INDEX>>
+    [password] as users_password
+    [firstName] as users_firstName
+    [lastName] as users_lastName
+    [avatar] as users_avatar
+    [isActive] as users_isActive <<INDEX>>
+    [lastLoginAt] as users_lastLoginAt
+    [createdAt] as users_createdAt <<INDEX>>
+    [updatedAt] as users_updatedAt
+    [deletedAt] as users_deletedAt <<INDEX>>
+  }
+  
+  database "tasks" {
+    [id] as tasks_id <<PK>>
+    [title] as tasks_title <<FULLTEXT INDEX>>
+    [description] as tasks_description <<FULLTEXT INDEX>>
+    [status] as tasks_status <<INDEX>>
+    [priority] as tasks_priority <<INDEX>>
+    [dueDate] as tasks_dueDate <<INDEX>>
+    [createdById] as tasks_createdById <<INDEX>>
+    [createdAt] as tasks_createdAt <<INDEX>>
+    [updatedAt] as tasks_updatedAt
+    [deletedAt] as tasks_deletedAt <<INDEX>>
+  }
+  
+  database "projects" {
+    [id] as projects_id <<PK>>
+    [name] as projects_name <<INDEX>>
+    [description] as projects_description
+    [status] as projects_status <<INDEX>>
+    [color] as projects_color
+    [createdAt] as projects_createdAt <<INDEX>>
+    [updatedAt] as projects_updatedAt
+    [deletedAt] as projects_deletedAt <<INDEX>>
+  }
+  
+  database "categories" {
+    [id] as categories_id <<PK>>
+    [name] as categories_name <<INDEX>>
+    [description] as categories_description
+    [color] as categories_color
+    [createdAt] as categories_createdAt <<INDEX>>
+    [updatedAt] as categories_updatedAt
+    [deletedAt] as categories_deletedAt <<INDEX>>
+  }
+}
+
+package "Связующие таблицы" {
+  database "task_assignments" {
+    [id] as ta_id <<PK>>
+    [taskId] as ta_taskId <<INDEX>>
+    [userId] as ta_userId <<INDEX>>
+    [status] as ta_status <<INDEX>>
+    [assignedAt] as ta_assignedAt <<INDEX>>
+    [createdAt] as ta_createdAt
+    [updatedAt] as ta_updatedAt
+    [deletedAt] as ta_deletedAt <<INDEX>>
+  }
+  
+  database "task_categories" {
+    [id] as tc_id <<PK>>
+    [taskId] as tc_taskId <<INDEX>>
+    [categoryId] as tc_categoryId <<INDEX>>
+    [createdAt] as tc_createdAt
+    [updatedAt] as tc_updatedAt
+  }
+  
+  database "task_projects" {
+    [id] as tp_id <<PK>>
+    [taskId] as tp_taskId <<INDEX>>
+    [projectId] as tp_projectId <<INDEX>>
+    [createdAt] as tp_createdAt
+    [updatedAt] as tp_updatedAt
+  }
+  
+  database "user_roles" {
+    [id] as ur_id <<PK>>
+    [userId] as ur_userId <<INDEX>>
+    [roleId] as ur_roleId <<INDEX>>
+    [assignedAt] as ur_assignedAt <<INDEX>>
+    [createdAt] as ur_createdAt
+    [updatedAt] as ur_updatedAt
+  }
+}
+
+package "Дополнительные таблицы" {
+  database "comments" {
+    [id] as comments_id <<PK>>
+    [content] as comments_content <<FULLTEXT INDEX>>
+    [taskId] as comments_taskId <<INDEX>>
+    [userId] as comments_userId <<INDEX>>
+    [createdAt] as comments_createdAt <<INDEX>>
+    [updatedAt] as comments_updatedAt
+    [deletedAt] as comments_deletedAt <<INDEX>>
+  }
+  
+  database "task_history" {
+    [id] as th_id <<PK>>
+    [taskId] as th_taskId <<INDEX>>
+    [userId] as th_userId <<INDEX>>
+    [action] as th_action <<INDEX>>
+    [fieldName] as th_fieldName
+    [oldValue] as th_oldValue
+    [newValue] as th_newValue
+    [createdAt] as th_createdAt <<INDEX>>
+  }
+}
+
+package "Составные индексы" {
+  note as CompositeIndexes
+    Составные индексы:
+    
+    task_assignments:
+    - (taskId, userId) - для быстрого поиска назначений
+    - (userId, status) - для поиска задач пользователя по статусу
+    - (taskId, status) - для поиска назначений задачи по статусу
+    
+    task_categories:
+    - (taskId, categoryId) - для быстрого поиска категорий задачи
+    - (categoryId, taskId) - для поиска задач в категории
+    
+    task_projects:
+    - (taskId, projectId) - для быстрого поиска проектов задачи
+    - (projectId, taskId) - для поиска задач в проекте
+    
+    user_roles:
+    - (userId, roleId) - для быстрого поиска ролей пользователя
+    - (roleId, userId) - для поиска пользователей с ролью
+    
+    comments:
+    - (taskId, createdAt) - для сортировки комментариев по времени
+    - (userId, createdAt) - для поиска комментариев пользователя
+    
+    task_history:
+    - (taskId, createdAt) - для сортировки истории по времени
+    - (userId, action) - для поиска действий пользователя
+  end note
+}
+
+package "Партиционирование" {
+  note as Partitioning
+    Стратегии партиционирования:
+    
+    task_history:
+    - По дате (PARTITION BY RANGE (YEAR(createdAt)))
+    - Хранение истории за последние 2 года
+    - Архивирование старых записей
+    
+    comments:
+    - По дате (PARTITION BY RANGE (YEAR(createdAt)))
+    - Хранение комментариев за последние 3 года
+    
+    tasks:
+    - По статусу (PARTITION BY LIST (status))
+    - Отдельные партиции для активных и завершенных задач
+  end note
+}
+
+package "Кэширование" {
+  cloud "Redis Cache" {
+    [User Cache] as user_cache
+    [Task Cache] as task_cache
+    [Project Cache] as project_cache
+    [Category Cache] as category_cache
+    [Session Cache] as session_cache
+  }
+  
+  note as Caching
+    Стратегии кэширования:
+    
+    - Кэширование пользователей на 1 час
+    - Кэширование проектов и категорий на 6 часов
+    - Кэширование задач на 30 минут
+    - Кэширование сессий на 24 часа
+    - Инвалидация кэша при изменениях
+  end note
+}
+
+package "Оптимизация запросов" {
+  note as QueryOptimization
+    Оптимизация запросов:
+    
+    1. Использование EXPLAIN для анализа планов выполнения
+    2. Оптимизация JOIN операций
+    3. Использование подзапросов вместо JOIN где возможно
+    4. Применение LIMIT для пагинации
+    5. Использование индексов для сортировки
+    6. Избежание SELECT * в пользу конкретных полей
+    7. Использование EXISTS вместо IN для больших наборов
+  end note
+}
+
+package "Мониторинг производительности" {
+  component "Performance Monitoring" {
+    [Query Analyzer] as query_analyzer
+    [Index Usage Monitor] as index_monitor
+    [Slow Query Log] as slow_query_log
+    [Connection Pool Monitor] as connection_monitor
+  }
+  
+  note as Monitoring
+    Мониторинг производительности:
+    
+    - Отслеживание медленных запросов (>1 сек)
+    - Мониторинг использования индексов
+    - Анализ статистики таблиц
+    - Мониторинг размера базы данных
+    - Отслеживание количества соединений
+    - Алерты при превышении лимитов
+  end note
+}
+
+package "Резервное копирование" {
+  component "Backup Strategy" {
+    [Full Backup] as full_backup
+    [Incremental Backup] as incremental_backup
+    [Point-in-Time Recovery] as pitr
+    [Automated Backup] as auto_backup
+  }
+  
+  note as Backup
+    Стратегия резервного копирования:
+    
+    - Полное резервное копирование ежедневно в 2:00
+    - Инкрементальное копирование каждые 4 часа
+    - Хранение резервных копий 30 дней
+    - Тестирование восстановления еженедельно
+    - Шифрование резервных копий
+  end note
+}
+
+' Связи между компонентами
+user_cache --> users_id
+task_cache --> tasks_id
+project_cache --> projects_id
+category_cache --> categories_id
+session_cache --> users_id
+
+query_analyzer --> tasks_id
+index_monitor --> ta_taskId
+slow_query_log --> tasks_id
+connection_monitor --> users_id
+
+full_backup --> users_id
+incremental_backup --> tasks_id
+pitr --> comments_id
+auto_backup --> projects_id
+
+@enduml 

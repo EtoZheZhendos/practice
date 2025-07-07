@@ -1,0 +1,258 @@
+@startuml TaskManager Normalized Data Model
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam entity {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+  FontColor #1565C0
+}
+skinparam database {
+  BackgroundColor #E8F5E8
+  BorderColor #388E3C
+  FontColor #1B5E20
+}
+
+title Нормализованная модель данных TaskManager
+
+' Первая нормальная форма (1NF) - Атомарность
+entity "users (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * email : VARCHAR(255) <<UNIQUE>>
+  * password : VARCHAR(255)
+  * firstName : VARCHAR(100)
+  * lastName : VARCHAR(100)
+  avatar : VARCHAR(500)
+  isActive : BOOLEAN <<DEFAULT true>>
+  lastLoginAt : TIMESTAMP
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "roles (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * name : VARCHAR(50) <<UNIQUE>>
+  * description : TEXT
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "user_roles (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * userId : INTEGER <<FK>>
+  * roleId : INTEGER <<FK>>
+  * assignedAt : TIMESTAMP
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+}
+
+entity "categories (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * name : VARCHAR(100)
+  * description : TEXT
+  * color : VARCHAR(7) <<HEX COLOR>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "projects (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * name : VARCHAR(200)
+  * description : TEXT
+  * status : ENUM('active', 'inactive', 'completed')
+  * color : VARCHAR(7) <<HEX COLOR>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "tasks (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * title : VARCHAR(500)
+  description : TEXT
+  * status : ENUM('pending', 'in_progress', 'completed')
+  * priority : INTEGER <<DEFAULT 1>>
+  dueDate : TIMESTAMP
+  * createdById : INTEGER <<FK>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "task_assignments (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * taskId : INTEGER <<FK>>
+  * userId : INTEGER <<FK>>
+  * status : ENUM('assigned', 'accepted', 'rejected')
+  * assignedAt : TIMESTAMP
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "task_categories (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * taskId : INTEGER <<FK>>
+  * categoryId : INTEGER <<FK>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+}
+
+entity "task_projects (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * taskId : INTEGER <<FK>>
+  * projectId : INTEGER <<FK>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+}
+
+entity "comments (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * content : TEXT
+  * taskId : INTEGER <<FK>>
+  * userId : INTEGER <<FK>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "task_history (1NF)" {
+  * id : INTEGER <<PK>>
+  --
+  * taskId : INTEGER <<FK>>
+  * userId : INTEGER <<FK>>
+  * action : VARCHAR(50)
+  * fieldName : VARCHAR(100)
+  oldValue : TEXT
+  newValue : TEXT
+  * createdAt : TIMESTAMP
+}
+
+' Вторая нормальная форма (2NF) - Устранение частичных зависимостей
+note top of users : 2NF: Все атрибуты зависят от полного ключа (id)
+note top of tasks : 2NF: Все атрибуты зависят от полного ключа (id)
+note top of task_assignments : 2NF: Составной ключ (taskId, userId) определяет все атрибуты
+
+' Третья нормальная форма (3NF) - Устранение транзитивных зависимостей
+note bottom of users : 3NF: Нет транзитивных зависимостей
+note bottom of tasks : 3NF: Нет транзитивных зависимостей
+note bottom of task_assignments : 3NF: Нет транзитивных зависимостей
+
+' Нормальная форма Бойса-Кодда (BCNF)
+note right of user_roles : BCNF: Каждый функциональный определитель является потенциальным ключом
+note right of task_categories : BCNF: Каждый функциональный определитель является потенциальным ключом
+note right of task_projects : BCNF: Каждый функциональный определитель является потенциальным ключом
+
+' Четвертая нормальная форма (4NF) - Устранение многозначных зависимостей
+note left of task_assignments : 4NF: Нет многозначных зависимостей
+note left of task_categories : 4NF: Нет многозначных зависимостей
+note left of task_projects : 4NF: Нет многозначных зависимостей
+
+' Пятая нормальная форма (5NF) - Устранение зависимостей соединения
+note bottom of task_assignments : 5NF: Нет зависимостей соединения
+note bottom of task_categories : 5NF: Нет зависимостей соединения
+note bottom of task_projects : 5NF: Нет зависимостей соединения
+
+' Relationships
+users ||--o{ user_roles : "has"
+roles ||--o{ user_roles : "assigned to"
+
+users ||--o{ tasks : "creates"
+tasks ||--o{ task_assignments : "assigned to"
+users ||--o{ task_assignments : "assigned"
+
+tasks ||--o{ task_categories : "belongs to"
+categories ||--o{ task_categories : "contains"
+
+tasks ||--o{ task_projects : "belongs to"
+projects ||--o{ task_projects : "contains"
+
+tasks ||--o{ comments : "has"
+users ||--o{ comments : "writes"
+
+tasks ||--o{ task_history : "tracks"
+users ||--o{ task_history : "performs"
+
+' Функциональные зависимости
+note as FD1
+  Функциональные зависимости:
+  
+  users:
+  id → {email, password, firstName, lastName, avatar, isActive, lastLoginAt, createdAt, updatedAt, deletedAt}
+  email → {id, password, firstName, lastName, avatar, isActive, lastLoginAt, createdAt, updatedAt, deletedAt}
+  
+  tasks:
+  id → {title, description, status, priority, dueDate, createdById, createdAt, updatedAt, deletedAt}
+  
+  task_assignments:
+  {taskId, userId} → {status, assignedAt, createdAt, updatedAt, deletedAt}
+  id → {taskId, userId, status, assignedAt, createdAt, updatedAt, deletedAt}
+  
+  task_categories:
+  {taskId, categoryId} → {createdAt, updatedAt}
+  id → {taskId, categoryId, createdAt, updatedAt}
+  
+  task_projects:
+  {taskId, projectId} → {createdAt, updatedAt}
+  id → {taskId, projectId, createdAt, updatedAt}
+end note
+
+' Индексы для оптимизации
+note as Indexes
+  Индексы для оптимизации:
+  
+  users:
+  - email (UNIQUE)
+  - isActive
+  - createdAt
+  
+  tasks:
+  - status
+  - priority
+  - createdById
+  - dueDate
+  - createdAt
+  
+  task_assignments:
+  - taskId
+  - userId
+  - status
+  
+  comments:
+  - taskId
+  - userId
+  - createdAt
+  
+  task_history:
+  - taskId
+  - userId
+  - action
+  - createdAt
+end note
+
+' Ограничения целостности
+note as Constraints
+  Ограничения целостности:
+  
+  - CASCADE DELETE для связанных записей
+  - UNIQUE ограничения на email и role names
+  - CHECK ограничения на статусы и приоритеты
+  - NOT NULL для обязательных полей
+  - DEFAULT значения для статусов и приоритетов
+  - SOFT DELETE для основных сущностей
+end note
+
+@enduml 

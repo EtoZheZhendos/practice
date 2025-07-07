@@ -1,0 +1,256 @@
+@startuml TaskManager Deployment Architecture
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam node {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+  FontColor #1565C0
+}
+skinparam database {
+  BackgroundColor #E8F5E8
+  BorderColor #388E3C
+  FontColor #1B5E20
+}
+skinparam cloud {
+  BackgroundColor #F3E5F5
+  BorderColor #7B1FA2
+  FontColor #4A148C
+}
+
+title Архитектура развертывания TaskManager
+
+cloud "Development Environment\n(Среда разработки)" {
+  node "Developer Machine" {
+    [VS Code] as VSCode
+    [Git Client] as Git
+    [Node.js] as NodeDev
+    [npm/yarn] as PackageManager
+  }
+  
+  node "Local Development Server" {
+    [Quasar Dev Server\n:9000] as QuasarDev
+    [NestJS Dev Server\n:3001] as NestDev
+    [SQLite Database] as SQLiteDev
+  }
+  
+  node "Development Tools" {
+    [ESLint] as ESLint
+    [Prettier] as Prettier
+    [TypeScript Compiler] as TSCompiler
+    [Hot Reload] as HotReload
+  }
+}
+
+cloud "Staging Environment\n(Тестовая среда)" {
+  node "Staging Server" {
+    [Nginx Reverse Proxy] as NginxStaging
+    [Load Balancer] as LoadBalancerStaging
+  }
+  
+  node "Application Servers" {
+    [NestJS App Instance 1] as NestStaging1
+    [NestJS App Instance 2] as NestStaging2
+    [Quasar App Instance 1] as QuasarStaging1
+    [Quasar App Instance 2] as QuasarStaging2
+  }
+  
+  node "Staging Database" {
+    [PostgreSQL Staging] as PostgresStaging
+    [Redis Cache] as RedisStaging
+  }
+  
+  node "Staging Services" {
+    [File Storage] as FileStorageStaging
+    [Email Service] as EmailStaging
+    [Monitoring] as MonitoringStaging
+  }
+}
+
+cloud "Production Environment\n(Продакшн среда)" {
+  node "Production Load Balancer" {
+    [Cloud Load Balancer] as CloudLB
+    [SSL Termination] as SSLTermination
+    [CDN] as CDN
+  }
+  
+  node "Production Servers" {
+    [NestJS App Instance 1] as NestProd1
+    [NestJS App Instance 2] as NestProd2
+    [NestJS App Instance 3] as NestProd3
+    [Quasar App Instance 1] as QuasarProd1
+    [Quasar App Instance 2] as QuasarProd2
+  }
+  
+  node "Production Database" {
+    [PostgreSQL Primary] as PostgresPrimary
+    [PostgreSQL Replica] as PostgresReplica
+    [Redis Cluster] as RedisCluster
+  }
+  
+  node "Production Services" {
+    [Object Storage] as ObjectStorage
+    [Email Service] as EmailProd
+    [SMS Service] as SMSProd
+    [Monitoring & Logging] as MonitoringProd
+    [Backup Service] as BackupService
+  }
+}
+
+cloud "CI/CD Pipeline\n(Конвейер сборки)" {
+  node "Source Control" {
+    [Git Repository] as GitRepo
+    [GitHub/GitLab] as GitPlatform
+  }
+  
+  node "Build Pipeline" {
+    [Code Quality Check] as CodeQuality
+    [Unit Tests] as UnitTests
+    [Integration Tests] as IntegrationTests
+    [Security Scan] as SecurityScan
+    [Build Process] as BuildProcess
+  }
+  
+  node "Deployment" {
+    [Docker Build] as DockerBuild
+    [Container Registry] as ContainerRegistry
+    [Deploy to Staging] as DeployStaging
+    [Deploy to Production] as DeployProd
+  }
+}
+
+cloud "Monitoring & Observability\n(Мониторинг)" {
+  node "Application Monitoring" {
+    [Application Metrics] as AppMetrics
+    [Performance Monitoring] as PerfMonitoring
+    [Error Tracking] as ErrorTracking
+  }
+  
+  node "Infrastructure Monitoring" {
+    [Server Metrics] as ServerMetrics
+    [Database Monitoring] as DBMonitoring
+    [Network Monitoring] as NetworkMonitoring
+  }
+  
+  node "Logging" {
+    [Centralized Logging] as CentralizedLogging
+    [Log Aggregation] as LogAggregation
+    [Log Analysis] as LogAnalysis
+  }
+}
+
+' Development connections
+VSCode --> GitRepo
+Git --> GitRepo
+NodeDev --> QuasarDev
+NodeDev --> NestDev
+PackageManager --> NestDev
+PackageManager --> QuasarDev
+
+QuasarDev --> NestDev
+NestDev --> SQLiteDev
+
+ESLint --> VSCode
+Prettier --> VSCode
+TSCompiler --> NestDev
+HotReload --> QuasarDev
+
+' Staging connections
+NginxStaging --> LoadBalancerStaging
+LoadBalancerStaging --> NestStaging1
+LoadBalancerStaging --> NestStaging2
+LoadBalancerStaging --> QuasarStaging1
+LoadBalancerStaging --> QuasarStaging2
+
+NestStaging1 --> PostgresStaging
+NestStaging2 --> PostgresStaging
+NestStaging1 --> RedisStaging
+NestStaging2 --> RedisStaging
+
+QuasarStaging1 --> NestStaging1
+QuasarStaging2 --> NestStaging2
+
+NestStaging1 --> FileStorageStaging
+NestStaging2 --> FileStorageStaging
+NestStaging1 --> EmailStaging
+NestStaging2 --> EmailStaging
+
+MonitoringStaging --> NestStaging1
+MonitoringStaging --> NestStaging2
+
+' Production connections
+CloudLB --> SSLTermination
+SSLTermination --> CDN
+CDN --> QuasarProd1
+CDN --> QuasarProd2
+
+CloudLB --> NestProd1
+CloudLB --> NestProd2
+CloudLB --> NestProd3
+
+NestProd1 --> PostgresPrimary
+NestProd2 --> PostgresPrimary
+NestProd3 --> PostgresPrimary
+
+PostgresPrimary --> PostgresReplica
+NestProd1 --> RedisCluster
+NestProd2 --> RedisCluster
+NestProd3 --> RedisCluster
+
+QuasarProd1 --> NestProd1
+QuasarProd2 --> NestProd2
+
+NestProd1 --> ObjectStorage
+NestProd2 --> ObjectStorage
+NestProd3 --> ObjectStorage
+
+NestProd1 --> EmailProd
+NestProd2 --> EmailProd
+NestProd3 --> EmailProd
+
+NestProd1 --> SMSProd
+NestProd2 --> SMSProd
+NestProd3 --> SMSProd
+
+MonitoringProd --> NestProd1
+MonitoringProd --> NestProd2
+MonitoringProd --> NestProd3
+MonitoringProd --> PostgresPrimary
+MonitoringProd --> RedisCluster
+
+BackupService --> PostgresPrimary
+BackupService --> ObjectStorage
+
+' CI/CD connections
+GitRepo --> GitPlatform
+GitPlatform --> CodeQuality
+CodeQuality --> UnitTests
+UnitTests --> IntegrationTests
+IntegrationTests --> SecurityScan
+SecurityScan --> BuildProcess
+
+BuildProcess --> DockerBuild
+DockerBuild --> ContainerRegistry
+ContainerRegistry --> DeployStaging
+DeployStaging --> DeployProd
+
+DeployStaging --> NestStaging1
+DeployStaging --> NestStaging2
+DeployProd --> NestProd1
+DeployProd --> NestProd2
+DeployProd --> NestProd3
+
+' Monitoring connections
+AppMetrics --> MonitoringProd
+PerfMonitoring --> MonitoringProd
+ErrorTracking --> MonitoringProd
+
+ServerMetrics --> MonitoringProd
+DBMonitoring --> MonitoringProd
+NetworkMonitoring --> MonitoringProd
+
+CentralizedLogging --> LogAggregation
+LogAggregation --> LogAnalysis
+LogAnalysis --> MonitoringProd
+
+@enduml 

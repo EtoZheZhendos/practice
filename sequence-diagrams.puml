@@ -1,0 +1,274 @@
+@startuml TaskManager Sequence Diagrams
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #1976D2
+  ActorBorderColor #1976D2
+  LifeLineBorderColor #1976D2
+  ParticipantBorderColor #1976D2
+  ParticipantBackgroundColor #E3F2FD
+  ActorBackgroundColor #E8F5E8
+  NoteBackgroundColor #FFF9C4
+  NoteBorderColor #FBC02D
+}
+
+title Диаграммы последовательности - TaskManager
+
+actor "Пользователь" as User
+participant "Frontend" as Frontend
+participant "AuthStore" as AuthStore
+participant "TasksStore" as TasksStore
+participant "ProjectsStore" as ProjectsStore
+participant "CategoriesStore" as CategoriesStore
+participant "UsersStore" as UsersStore
+participant "AuthController" as AuthCtrl
+participant "TasksController" as TasksCtrl
+participant "ProjectsController" as ProjectsCtrl
+participant "CategoriesController" as CategoriesCtrl
+participant "UsersController" as UsersCtrl
+participant "AuthService" as AuthSvc
+participant "TasksService" as TasksSvc
+participant "ProjectsService" as ProjectsSvc
+participant "CategoriesService" as CategoriesSvc
+participant "UsersService" as UsersSvc
+participant "Database" as DB
+participant "JWT" as JWT
+participant "bcrypt" as Bcrypt
+
+== Сценарий 1: Регистрация и вход пользователя ==
+
+User -> Frontend: Открытие страницы регистрации
+Frontend -> User: Отображение формы регистрации
+
+User -> Frontend: Заполнение формы (email, password, firstName, lastName)
+Frontend -> Frontend: Валидация данных формы
+
+alt Данные корректны
+    Frontend -> AuthStore: register(userData)
+    AuthStore -> AuthCtrl: POST /auth/register
+    AuthCtrl -> AuthSvc: register(registerDto)
+    AuthSvc -> DB: Поиск пользователя по email
+    DB -> AuthSvc: Пользователь не найден
+    AuthSvc -> Bcrypt: hash(password)
+    Bcrypt -> AuthSvc: hashedPassword
+    AuthSvc -> DB: Создание пользователя
+    DB -> AuthSvc: Созданный пользователь
+    AuthSvc -> JWT: sign(payload)
+    JWT -> AuthSvc: access_token
+    AuthSvc -> AuthCtrl: {access_token, user}
+    AuthCtrl -> AuthStore: Успешная регистрация
+    AuthStore -> AuthStore: Сохранение токена в localStorage
+    AuthStore -> Frontend: Переход на Dashboard
+    Frontend -> User: Отображение Dashboard
+else Данные некорректны
+    Frontend -> User: Отображение ошибок валидации
+end
+
+== Сценарий 2: Вход в систему ==
+
+User -> Frontend: Открытие страницы входа
+Frontend -> User: Отображение формы входа
+
+User -> Frontend: Ввод email и password
+Frontend -> Frontend: Валидация данных
+
+alt Данные корректны
+    Frontend -> AuthStore: login(credentials)
+    AuthStore -> AuthCtrl: POST /auth/login
+    AuthCtrl -> AuthSvc: login(loginDto)
+    AuthSvc -> DB: Поиск пользователя по email
+    DB -> AuthSvc: Данные пользователя
+    AuthSvc -> Bcrypt: compare(password, hashedPassword)
+    Bcrypt -> AuthSvc: true/false
+    
+    alt Пароль верный
+        AuthSvc -> JWT: sign(payload)
+        JWT -> AuthSvc: access_token
+        AuthSvc -> AuthCtrl: {access_token, user}
+        AuthCtrl -> AuthStore: Успешный вход
+        AuthStore -> AuthStore: Сохранение токена
+        AuthStore -> Frontend: Переход на Dashboard
+        Frontend -> User: Отображение Dashboard
+    else Пароль неверный
+        AuthSvc -> AuthCtrl: UnauthorizedException
+        AuthCtrl -> AuthStore: Ошибка авторизации
+        AuthStore -> Frontend: Отображение ошибки
+        Frontend -> User: Сообщение об ошибке
+    end
+else Данные некорректны
+    Frontend -> User: Отображение ошибок валидации
+end
+
+== Сценарий 3: Создание новой задачи ==
+
+User -> Frontend: Нажатие "Создать задачу"
+Frontend -> User: Отображение диалога создания
+
+Frontend -> CategoriesStore: fetchCategories()
+CategoriesStore -> CategoriesCtrl: GET /categories
+CategoriesCtrl -> CategoriesSvc: findAll()
+CategoriesSvc -> DB: Получение всех категорий
+DB -> CategoriesSvc: Список категорий
+CategoriesSvc -> CategoriesCtrl: Категории
+CategoriesCtrl -> CategoriesStore: Категории загружены
+
+Frontend -> ProjectsStore: fetchProjects()
+ProjectsStore -> ProjectsCtrl: GET /projects
+ProjectsCtrl -> ProjectsSvc: findAll()
+ProjectsSvc -> DB: Получение всех проектов
+DB -> ProjectsSvc: Список проектов
+ProjectsSvc -> ProjectsCtrl: Проекты
+ProjectsCtrl -> ProjectsStore: Проекты загружены
+
+Frontend -> UsersStore: fetchUsers()
+UsersStore -> UsersCtrl: GET /users
+UsersCtrl -> UsersSvc: findAll()
+UsersSvc -> DB: Получение всех пользователей
+DB -> UsersSvc: Список пользователей
+UsersSvc -> UsersCtrl: Пользователи
+UsersCtrl -> UsersStore: Пользователи загружены
+
+User -> Frontend: Заполнение формы задачи
+Frontend -> Frontend: Валидация данных
+
+alt Данные корректны
+    Frontend -> TasksStore: createTask(taskData)
+    TasksStore -> TasksCtrl: POST /tasks
+    TasksCtrl -> TasksSvc: create(createTaskDto, userId)
+    TasksSvc -> DB: Создание записи задачи
+    DB -> TasksSvc: Созданная задача
+    
+    alt Есть назначения
+        TasksSvc -> DB: Создание назначений
+        DB -> TasksSvc: Назначения созданы
+    end
+    
+    TasksSvc -> TasksCtrl: Созданная задача
+    TasksCtrl -> TasksStore: Задача создана
+    TasksStore -> Frontend: Обновление списка задач
+    Frontend -> User: Отображение новой задачи
+else Данные некорректны
+    Frontend -> User: Отображение ошибок валидации
+end
+
+== Сценарий 4: Редактирование задачи ==
+
+User -> Frontend: Нажатие на задачу
+Frontend -> TasksStore: fetchTask(taskId)
+TasksStore -> TasksCtrl: GET /tasks/:id
+TasksCtrl -> TasksSvc: findOne(id)
+TasksSvc -> DB: Поиск задачи с связями
+DB -> TasksSvc: Данные задачи
+TasksSvc -> TasksCtrl: Задача с связями
+TasksCtrl -> TasksStore: Задача загружена
+TasksStore -> Frontend: Отображение деталей задачи
+
+User -> Frontend: Нажатие "Редактировать"
+Frontend -> User: Отображение формы редактирования
+
+User -> Frontend: Изменение данных задачи
+Frontend -> Frontend: Валидация изменений
+
+alt Данные корректны
+    Frontend -> TasksStore: updateTask(taskId, taskData)
+    TasksStore -> TasksCtrl: PATCH /tasks/:id
+    TasksCtrl -> TasksSvc: update(id, updateTaskDto)
+    TasksSvc -> DB: Обновление задачи
+    DB -> TasksSvc: Задача обновлена
+    
+    alt Изменены назначения
+        TasksSvc -> DB: Удаление старых назначений
+        TasksSvc -> DB: Создание новых назначений
+        DB -> TasksSvc: Назначения обновлены
+    end
+    
+    alt Изменены категории
+        TasksSvc -> DB: Обновление связей с категориями
+        DB -> TasksSvc: Категории обновлены
+    end
+    
+    alt Изменены проекты
+        TasksSvc -> DB: Обновление связей с проектами
+        DB -> TasksSvc: Проекты обновлены
+    end
+    
+    TasksSvc -> TasksCtrl: Обновленная задача
+    TasksCtrl -> TasksStore: Задача обновлена
+    TasksStore -> Frontend: Обновление отображения
+    Frontend -> User: Отображение изменений
+else Данные некорректны
+    Frontend -> User: Отображение ошибок валидации
+end
+
+== Сценарий 5: Управление проектами ==
+
+User -> Frontend: Переход на страницу проектов
+Frontend -> ProjectsStore: fetchProjects()
+ProjectsStore -> ProjectsCtrl: GET /projects
+ProjectsCtrl -> ProjectsSvc: findAll()
+ProjectsSvc -> DB: Получение всех проектов
+DB -> ProjectsSvc: Список проектов
+ProjectsSvc -> ProjectsCtrl: Проекты
+ProjectsCtrl -> ProjectsStore: Проекты загружены
+ProjectsStore -> Frontend: Отображение проектов
+
+User -> Frontend: Нажатие "Создать проект"
+Frontend -> User: Отображение диалога создания проекта
+
+User -> Frontend: Заполнение данных проекта
+Frontend -> Frontend: Валидация данных
+
+alt Данные корректны
+    Frontend -> ProjectsStore: createProject(projectData)
+    ProjectsStore -> ProjectsCtrl: POST /projects
+    ProjectsCtrl -> ProjectsSvc: create(createProjectDto)
+    ProjectsSvc -> DB: Создание проекта
+    DB -> ProjectsSvc: Созданный проект
+    ProjectsSvc -> ProjectsCtrl: Проект создан
+    ProjectsCtrl -> ProjectsStore: Проект создан
+    ProjectsStore -> Frontend: Обновление списка проектов
+    Frontend -> User: Отображение нового проекта
+else Данные некорректны
+    Frontend -> User: Отображение ошибок валидации
+end
+
+== Сценарий 6: Система комментариев ==
+
+User -> Frontend: Открытие задачи
+Frontend -> TasksStore: fetchTask(taskId)
+TasksStore -> TasksCtrl: GET /tasks/:id
+TasksCtrl -> TasksSvc: findOne(id)
+TasksSvc -> DB: Поиск задачи с комментариями
+DB -> TasksSvc: Задача с комментариями
+TasksSvc -> TasksCtrl: Задача
+TasksCtrl -> TasksStore: Задача загружена
+TasksStore -> Frontend: Отображение комментариев
+
+User -> Frontend: Добавление комментария
+Frontend -> Frontend: Валидация комментария
+
+alt Комментарий корректный
+    Frontend -> TasksStore: createComment(commentData)
+    TasksStore -> TasksCtrl: POST /comments
+    TasksCtrl -> CommentsSvc: create(createCommentDto)
+    CommentsSvc -> DB: Создание комментария
+    DB -> CommentsSvc: Созданный комментарий
+    CommentsSvc -> TasksCtrl: Комментарий создан
+    TasksCtrl -> TasksStore: Комментарий создан
+    TasksStore -> Frontend: Обновление списка комментариев
+    Frontend -> User: Отображение нового комментария
+else Комментарий некорректный
+    Frontend -> User: Отображение ошибки валидации
+end
+
+== Сценарий 7: Выход из системы ==
+
+User -> Frontend: Нажатие "Выйти"
+Frontend -> AuthStore: logout()
+AuthStore -> AuthStore: Очистка токена из localStorage
+AuthStore -> AuthStore: Сброс состояния авторизации
+AuthStore -> Frontend: Перенаправление на страницу входа
+Frontend -> User: Отображение страницы входа
+
+@enduml 

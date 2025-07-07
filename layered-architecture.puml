@@ -1,0 +1,166 @@
+@startuml TaskManager Layered Architecture
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam package {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+  FontColor #1565C0
+}
+skinparam component {
+  BackgroundColor #F3E5F5
+  BorderColor #7B1FA2
+  FontColor #4A148C
+}
+skinparam database {
+  BackgroundColor #E8F5E8
+  BorderColor #388E3C
+  FontColor #1B5E20
+}
+
+title Слоистая архитектура TaskManager
+
+package "Presentation Layer\n(Представление)" {
+  package "Vue.js Components" {
+    [Pages] as Pages
+    [Common Components] as CommonComponents
+    [Layout Components] as LayoutComponents
+  }
+  
+  package "State Management" {
+    [Pinia Stores] as Stores
+    [Router] as Router
+  }
+  
+  package "HTTP Client" {
+    [Axios] as Axios
+    [Interceptors] as Interceptors
+  }
+}
+
+package "API Layer\n(API Слой)" {
+  package "Controllers" {
+    [AuthController] as AuthCtrl
+    [TasksController] as TasksCtrl
+    [ProjectsController] as ProjectsCtrl
+    [UsersController] as UsersCtrl
+    [CategoriesController] as CategoriesCtrl
+  }
+  
+  package "DTOs & Validation" {
+    [Data Transfer Objects] as DTOs
+    [Validation Pipes] as Validation
+    [Exception Filters] as ExceptionFilters
+  }
+}
+
+package "Business Logic Layer\n(Бизнес-логика)" {
+  package "Services" {
+    [AuthService] as AuthSvc
+    [TasksService] as TasksSvc
+    [ProjectsService] as ProjectsSvc
+    [UsersService] as UsersSvc
+    [CategoriesService] as CategoriesSvc
+  }
+  
+  package "Guards & Middleware" {
+    [JWT Guards] as Guards
+    [Authentication] as Auth
+    [Authorization] as Authorization
+  }
+  
+  package "Business Rules" {
+    [Task Management Rules] as TaskRules
+    [User Management Rules] as UserRules
+    [Project Management Rules] as ProjectRules
+  }
+}
+
+package "Data Access Layer\n(Доступ к данным)" {
+  package "Models" {
+    [Sequelize Models] as Models
+    [Relationships] as Relationships
+  }
+  
+  package "Repositories" {
+    [Data Access Objects] as DAOs
+    [Query Builders] as QueryBuilders
+  }
+  
+  package "Migrations" {
+    [Database Migrations] as Migrations
+    [Seeders] as Seeders
+  }
+}
+
+package "Infrastructure Layer\n(Инфраструктура)" {
+  database "SQLite Database" {
+    [Tables] as Tables
+    [Indexes] as Indexes
+    [Constraints] as Constraints
+  }
+  
+  package "External Services" {
+    [JWT] as JWT
+    [bcrypt] as Bcrypt
+    [class-validator] as Validator
+  }
+  
+  package "Configuration" {
+    [Environment Variables] as EnvVars
+    [App Configuration] as AppConfig
+    [Database Config] as DBConfig
+  }
+}
+
+' Layer dependencies (only downward)
+Presentation Layer --> API Layer
+API Layer --> Business Logic Layer
+Business Logic Layer --> Data Access Layer
+Data Access Layer --> Infrastructure Layer
+
+' Cross-cutting concerns
+package "Cross-Cutting Concerns\n(Сквозные аспекты)" {
+  [Logging] as Logging
+  [Error Handling] as ErrorHandling
+  [Security] as Security
+  [Validation] as Validation
+  [Caching] as Caching
+}
+
+' Cross-cutting connections
+Logging --> Business Logic Layer
+Logging --> Data Access Layer
+ErrorHandling --> API Layer
+ErrorHandling --> Business Logic Layer
+Security --> API Layer
+Security --> Business Logic Layer
+Validation --> API Layer
+Validation --> Business Logic Layer
+Caching --> Data Access Layer
+
+' Specific component connections
+Pages --> Stores
+Stores --> Axios
+Axios --> AuthCtrl
+Axios --> TasksCtrl
+Axios --> ProjectsCtrl
+
+AuthCtrl --> AuthSvc
+TasksCtrl --> TasksSvc
+ProjectsCtrl --> ProjectsSvc
+UsersCtrl --> UsersSvc
+CategoriesCtrl --> CategoriesSvc
+
+AuthSvc --> Models
+TasksSvc --> Models
+ProjectsSvc --> Models
+UsersSvc --> Models
+CategoriesSvc --> Models
+
+Models --> Tables
+AuthSvc --> JWT
+AuthSvc --> Bcrypt
+Validation --> Validator
+
+@enduml 

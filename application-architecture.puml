@@ -1,0 +1,257 @@
+@startuml TaskManager Application Architecture
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam component {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+  FontColor #1565C0
+}
+skinparam package {
+  BackgroundColor #F3E5F5
+  BorderColor #7B1FA2
+  FontColor #4A148C
+}
+skinparam interface {
+  BackgroundColor #FFF3E0
+  BorderColor #FF9800
+  FontColor #E65100
+}
+
+title Детальная архитектура приложения TaskManager
+
+package "Presentation Layer" {
+  package "Vue.js Pages" {
+    [Dashboard.vue] as Dashboard
+    [Tasks.vue] as Tasks
+    [TaskDetail.vue] as TaskDetail
+    [Projects.vue] as Projects
+    [AuthLogin.vue] as Login
+    [AuthRegister.vue] as Register
+    [UserProfile.vue] as Profile
+    [ErrorNotFound.vue] as Error404
+  }
+  
+  package "Reusable Components" {
+    [CommonButton.vue] as Button
+    [CommonCard.vue] as Card
+    [CommonDialog.vue] as Dialog
+    [CommonForm.vue] as Form
+    [CommonInput.vue] as Input
+    [CommonSelect.vue] as Select
+    [CommonTable.vue] as Table
+    [CommonNotification.vue] as Notification
+  }
+  
+  package "Layout Components" {
+    [MainLayout.vue] as MainLayout
+    [EssentialLink.vue] as EssentialLink
+  }
+}
+
+package "State Management (Pinia)" {
+  [auth.js] as AuthStore
+  [tasks.js] as TasksStore
+  [projects.js] as ProjectsStore
+  [users.js] as UsersStore
+  [categories.js] as CategoriesStore
+  [comments.js] as CommentsStore
+  [roles.js] as RolesStore
+}
+
+package "Routing & Navigation" {
+  [router/index.js] as Router
+  [router/routes.js] as Routes
+  [boot/axios.js] as AxiosBoot
+}
+
+package "HTTP Client" {
+  [axios] as Axios
+  [interceptors] as Interceptors
+  [error-handling] as ErrorHandling
+}
+
+package "Backend API Layer" {
+  package "Controllers" {
+    [AuthController] as AuthCtrl
+    [TasksController] as TasksCtrl
+    [ProjectsController] as ProjectsCtrl
+    [UsersController] as UsersCtrl
+    [CategoriesController] as CategoriesCtrl
+    [CommentsController] as CommentsCtrl
+    [RolesController] as RolesCtrl
+    [HistoryController] as HistoryCtrl
+  }
+  
+  package "DTOs" {
+    [RegisterDto] as RegisterDto
+    [LoginDto] as LoginDto
+    [CreateTaskDto] as CreateTaskDto
+    [UpdateTaskDto] as UpdateTaskDto
+    [CreateUserDto] as CreateUserDto
+    [UpdateUserDto] as UpdateUserDto
+  }
+  
+  package "Interfaces" {
+    [ITaskFilters] as TaskFilters
+    [IUserFilters] as UserFilters
+    [TaskInterface] as TaskInterface
+    [UserInterface] as UserInterface
+  }
+}
+
+package "Business Logic Layer" {
+  package "Services" {
+    [AuthService] as AuthSvc
+    [TasksService] as TasksSvc
+    [ProjectsService] as ProjectsSvc
+    [UsersService] as UsersSvc
+    [CategoriesService] as CategoriesSvc
+    [CommentsService] as CommentsSvc
+    [RolesService] as RolesSvc
+    [HistoryService] as HistorySvc
+  }
+  
+  package "Guards & Middleware" {
+    [JwtAuthGuard] as JWTGuard
+    [ValidationPipe] as ValidationPipe
+    [ExceptionFilter] as ExceptionFilter
+    [LoggingInterceptor] as LoggingInterceptor
+  }
+  
+  package "Strategies" {
+    [JwtStrategy] as JwtStrategy
+  }
+}
+
+package "Data Access Layer" {
+  package "Models (Sequelize)" {
+    [User] as UserModel
+    [Task] as TaskModel
+    [Project] as ProjectModel
+    [Category] as CategoryModel
+    [Comment] as CommentModel
+    [Role] as RoleModel
+    [TaskAssignment] as TaskAssignmentModel
+    [TaskCategory] as TaskCategoryModel
+    [TaskProject] as TaskProjectModel
+    [UserRole] as UserRoleModel
+    [TaskHistory] as TaskHistoryModel
+  }
+  
+  package "Repositories" {
+    [UserRepository] as UserRepo
+    [TaskRepository] as TaskRepo
+    [ProjectRepository] as ProjectRepo
+    [CategoryRepository] as CategoryRepo
+  }
+}
+
+package "Database Layer" {
+  database "SQLite Database" {
+    [users] as UsersTable
+    [tasks] as TasksTable
+    [projects] as ProjectsTable
+    [categories] as CategoriesTable
+    [comments] as CommentsTable
+    [roles] as RolesTable
+    [user_roles] as UserRolesTable
+    [task_assignments] as TaskAssignmentsTable
+    [task_categories] as TaskCategoriesTable
+    [task_projects] as TaskProjectsTable
+    [task_history] as TaskHistoryTable
+  }
+}
+
+package "External Dependencies" {
+  [JWT] as JWT
+  [bcrypt] as Bcrypt
+  [class-validator] as Validator
+  [class-transformer] as Transformer
+  [sequelize] as Sequelize
+  [sqlite3] as SQLite
+}
+
+package "Configuration" {
+  [main.ts] as Main
+  [app.module.ts] as AppModule
+  [quasar.config.js] as QuasarConfig
+  [tsconfig.json] as TSConfig
+  [package.json] as PackageJson
+}
+
+' Frontend connections
+Dashboard --> TasksStore
+Tasks --> TasksStore
+TaskDetail --> TasksStore
+Projects --> ProjectsStore
+Login --> AuthStore
+Register --> AuthStore
+Profile --> UsersStore
+
+TasksStore --> Axios
+ProjectsStore --> Axios
+AuthStore --> Axios
+UsersStore --> Axios
+CategoriesStore --> Axios
+
+' Backend connections
+AuthCtrl --> AuthSvc
+TasksCtrl --> TasksSvc
+ProjectsCtrl --> ProjectsSvc
+UsersCtrl --> UsersSvc
+CategoriesCtrl --> CategoriesSvc
+CommentsCtrl --> CommentsSvc
+RolesCtrl --> RolesSvc
+HistoryCtrl --> HistorySvc
+
+AuthSvc --> UserModel
+TasksSvc --> TaskModel
+ProjectsSvc --> ProjectModel
+UsersSvc --> UserModel
+CategoriesSvc --> CategoryModel
+CommentsSvc --> CommentModel
+RolesSvc --> RoleModel
+HistorySvc --> TaskHistoryModel
+
+' Guards and middleware
+AuthCtrl --> JWTGuard
+TasksCtrl --> JWTGuard
+ProjectsCtrl --> JWTGuard
+UsersCtrl --> JWTGuard
+CategoriesCtrl --> JWTGuard
+
+AuthCtrl --> ValidationPipe
+TasksCtrl --> ValidationPipe
+ProjectsCtrl --> ValidationPipe
+UsersCtrl --> ValidationPipe
+
+' Database connections
+UserModel --> UsersTable
+TaskModel --> TasksTable
+ProjectModel --> ProjectsTable
+CategoryModel --> CategoriesTable
+CommentModel --> CommentsTable
+RoleModel --> RolesTable
+TaskAssignmentModel --> TaskAssignmentsTable
+TaskCategoryModel --> TaskCategoriesTable
+TaskProjectModel --> TaskProjectsTable
+UserRoleModel --> UserRolesTable
+TaskHistoryModel --> TaskHistoryTable
+
+' External services
+AuthSvc --> JWT
+AuthSvc --> Bcrypt
+ValidationPipe --> Validator
+ValidationPipe --> Transformer
+UserModel --> Sequelize
+TaskModel --> Sequelize
+Sequelize --> SQLite
+
+' Configuration
+Main --> AppModule
+AppModule --> AuthSvc
+AppModule --> TasksSvc
+AppModule --> ProjectsSvc
+
+@enduml 

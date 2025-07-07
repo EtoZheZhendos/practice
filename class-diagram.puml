@@ -1,0 +1,299 @@
+@startuml TaskManager Class Diagram
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam class {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+  FontColor #1565C0
+  ArrowColor #1976D2
+}
+skinparam interface {
+  BackgroundColor #FFF3E0
+  BorderColor #FF9800
+  FontColor #E65100
+}
+
+title Диаграмма классов - TaskManager
+
+class User {
+  -id: number
+  -email: string
+  -password: string
+  -firstName: string
+  -lastName: string
+  -avatar?: string
+  -isActive: boolean
+  -lastLoginAt?: Date
+  -createdAt: Date
+  -updatedAt: Date
+  -deletedAt?: Date
+  --
+  +create(dto: CreateUserDto): Promise<User>
+  +findAll(filters?: IUserFilters): Promise<User[]>
+  +findOne(id: number): Promise<User>
+  +findByEmail(email: string): Promise<User | null>
+  +update(id: number, dto: UpdateUserDto): Promise<User>
+  +remove(id: number): Promise<void>
+  +updateLastLogin(id: number): Promise<void>
+}
+
+class Task {
+  -id: number
+  -title: string
+  -description?: string
+  -status: TaskStatus
+  -priority: number
+  -dueDate?: Date
+  -createdById: number
+  -createdAt: Date
+  -updatedAt: Date
+  -deletedAt?: Date
+  --
+  +create(dto: CreateTaskDto, userId: number): Promise<Task>
+  +findAll(filters?: ITaskFilters): Promise<Task[]>
+  +findOne(id: number): Promise<Task>
+  +update(id: number, dto: UpdateTaskDto): Promise<Task>
+  +remove(id: number): Promise<void>
+  +findByUser(userId: number): Promise<Task[]>
+  +findAssignedToUser(userId: number): Promise<Task[]>
+}
+
+class Project {
+  -id: number
+  -name: string
+  -description?: string
+  -status: ProjectStatus
+  -color: string
+  -createdAt: Date
+  -updatedAt: Date
+  -deletedAt?: Date
+  --
+  +create(dto: CreateProjectDto): Promise<Project>
+  +findAll(): Promise<Project[]>
+  +findOne(id: number): Promise<Project>
+  +update(id: number, dto: UpdateProjectDto): Promise<Project>
+  +remove(id: number): Promise<void>
+}
+
+class Category {
+  -id: number
+  -name: string
+  -description?: string
+  -color: string
+  -createdAt: Date
+  -updatedAt: Date
+  -deletedAt?: Date
+  --
+  +create(dto: CreateCategoryDto): Promise<Category>
+  +findAll(): Promise<Category[]>
+  +findOne(id: number): Promise<Category>
+  +update(id: number, dto: UpdateCategoryDto): Promise<Category>
+  +remove(id: number): Promise<void>
+}
+
+class Comment {
+  -id: number
+  -content: string
+  -taskId: number
+  -userId: number
+  -createdAt: Date
+  -updatedAt: Date
+  -deletedAt?: Date
+  --
+  +create(dto: CreateCommentDto): Promise<Comment>
+  +findAll(taskId: number): Promise<Comment[]>
+  +findOne(id: number): Promise<Comment>
+  +update(id: number, dto: UpdateCommentDto): Promise<Comment>
+  +remove(id: number): Promise<void>
+}
+
+class Role {
+  -id: number
+  -name: string
+  -description?: string
+  -createdAt: Date
+  -updatedAt: Date
+  -deletedAt?: Date
+  --
+  +create(dto: CreateRoleDto): Promise<Role>
+  +findAll(): Promise<Role[]>
+  +findOne(id: number): Promise<Role>
+  +update(id: number, dto: UpdateRoleDto): Promise<Role>
+  +remove(id: number): Promise<void>
+}
+
+class TaskAssignment {
+  -id: number
+  -taskId: number
+  -userId: number
+  -status: AssignmentStatus
+  -assignedAt: Date
+  -createdAt: Date
+  -updatedAt: Date
+  -deletedAt?: Date
+  --
+  +create(taskId: number, userId: number): Promise<TaskAssignment>
+  +findByTask(taskId: number): Promise<TaskAssignment[]>
+  +findByUser(userId: number): Promise<TaskAssignment[]>
+  +updateStatus(id: number, status: AssignmentStatus): Promise<TaskAssignment>
+  +remove(id: number): Promise<void>
+}
+
+class TaskHistory {
+  -id: number
+  -taskId: number
+  -userId: number
+  -action: string
+  -fieldName?: string
+  -oldValue?: string
+  -newValue?: string
+  -createdAt: Date
+  --
+  +create(record: CreateHistoryDto): Promise<TaskHistory>
+  +findByTask(taskId: number): Promise<TaskHistory[]>
+  +findByUser(userId: number): Promise<TaskHistory[]>
+}
+
+' DTOs
+class CreateUserDto {
+  +email: string
+  +password: string
+  +firstName: string
+  +lastName: string
+  +avatar?: string
+}
+
+class UpdateUserDto {
+  +email?: string
+  +password?: string
+  +firstName?: string
+  +lastName?: string
+  +avatar?: string
+  +isActive?: boolean
+}
+
+class CreateTaskDto {
+  +title: string
+  +description?: string
+  +status?: TaskStatus
+  +priority?: number
+  +dueDate?: Date
+  +categoryIds?: number[]
+  +projectIds?: number[]
+  +assigneeIds?: number[]
+}
+
+class UpdateTaskDto {
+  +title?: string
+  +description?: string
+  +status?: TaskStatus
+  +priority?: number
+  +dueDate?: Date
+  +categoryIds?: number[]
+  +projectIds?: number[]
+  +assigneeIds?: number[]
+}
+
+class CreateCommentDto {
+  +content: string
+  +taskId: number
+}
+
+class UpdateCommentDto {
+  +content: string
+}
+
+' Interfaces
+interface ITaskFilters {
+  +status?: TaskStatus
+  +priority?: number
+  +createdById?: number
+  +search?: string
+  +dueDateFrom?: Date
+  +dueDateTo?: Date
+}
+
+interface IUserFilters {
+  +isActive?: boolean
+  +search?: string
+}
+
+interface TaskInterface {
+  +id: number
+  +title: string
+  +description?: string
+  +status: TaskStatus
+  +priority: number
+  +dueDate?: Date
+  +createdById: number
+  +createdAt: Date
+  +updatedAt: Date
+}
+
+interface UserInterface {
+  +id: number
+  +email: string
+  +firstName: string
+  +lastName: string
+  +avatar?: string
+  +isActive: boolean
+  +lastLoginAt?: Date
+  +createdAt: Date
+  +updatedAt: Date
+}
+
+' Enums
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  INACTIVE
+  COMPLETED
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  ACCEPTED
+  REJECTED
+}
+
+' Relationships
+User ||--o{ Task : "creates"
+User ||--o{ Comment : "writes"
+User ||--o{ TaskAssignment : "assigned"
+User ||--o{ TaskHistory : "performs"
+User }o--|| UserRole : "has"
+Role }o--|| UserRole : "assigned to"
+
+Task ||--o{ Comment : "has"
+Task ||--o{ TaskAssignment : "assigned to"
+Task ||--o{ TaskHistory : "tracks"
+Task }o--|| TaskCategory : "belongs to"
+Task }o--|| TaskProject : "belongs to"
+
+Category }o--|| TaskCategory : "contains"
+Project }o--|| TaskProject : "contains"
+
+' DTO relationships
+CreateUserDto ..> User : "creates"
+UpdateUserDto ..> User : "updates"
+CreateTaskDto ..> Task : "creates"
+UpdateTaskDto ..> Task : "updates"
+CreateCommentDto ..> Comment : "creates"
+UpdateCommentDto ..> Comment : "updates"
+
+' Interface implementations
+Task ..|> TaskInterface : "implements"
+User ..|> UserInterface : "implements"
+
+' Enum usage
+Task }o--|| TaskStatus : "has"
+Project }o--|| ProjectStatus : "has"
+TaskAssignment }o--|| AssignmentStatus : "has"
+
+@enduml 

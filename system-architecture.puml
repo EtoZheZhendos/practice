@@ -1,0 +1,159 @@
+@startuml TaskManager System Architecture
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam component {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+  FontColor #1565C0
+}
+skinparam package {
+  BackgroundColor #F3E5F5
+  BorderColor #7B1FA2
+  FontColor #4A148C
+}
+skinparam database {
+  BackgroundColor #E8F5E8
+  BorderColor #388E3C
+  FontColor #1B5E20
+}
+
+title Архитектура системы TaskManager
+
+package "Frontend (Vue.js + Quasar)" {
+  [Dashboard.vue] as Dashboard
+  [Tasks.vue] as Tasks
+  [Projects.vue] as Projects
+  [AuthLogin.vue] as Login
+  [AuthRegister.vue] as Register
+  [UserProfile.vue] as Profile
+  
+  package "Components" {
+    [CommonButton.vue] as Button
+    [CommonCard.vue] as Card
+    [CommonDialog.vue] as Dialog
+    [CommonForm.vue] as Form
+    [CommonInput.vue] as Input
+    [CommonTable.vue] as Table
+  }
+  
+  package "Stores (Pinia)" {
+    [auth.js] as AuthStore
+    [tasks.js] as TasksStore
+    [projects.js] as ProjectsStore
+    [users.js] as UsersStore
+    [categories.js] as CategoriesStore
+  }
+  
+  package "Router" {
+    [routes.js] as Routes
+  }
+}
+
+package "Backend (NestJS)" {
+  package "Controllers" {
+    [AuthController] as AuthCtrl
+    [TasksController] as TasksCtrl
+    [ProjectsController] as ProjectsCtrl
+    [UsersController] as UsersCtrl
+    [CategoriesController] as CategoriesCtrl
+    [CommentsController] as CommentsCtrl
+  }
+  
+  package "Services" {
+    [AuthService] as AuthSvc
+    [TasksService] as TasksSvc
+    [ProjectsService] as ProjectsSvc
+    [UsersService] as UsersSvc
+    [CategoriesService] as CategoriesSvc
+    [CommentsService] as CommentsSvc
+  }
+  
+  package "Guards & Middleware" {
+    [JWTGuard] as JWTGuard
+    [ValidationPipe] as ValidationPipe
+    [ExceptionFilter] as ExceptionFilter
+  }
+  
+  package "Models (Sequelize)" {
+    [User] as UserModel
+    [Task] as TaskModel
+    [Project] as ProjectModel
+    [Category] as CategoryModel
+    [Comment] as CommentModel
+    [Role] as RoleModel
+  }
+}
+
+database "SQLite Database" {
+  [users] as UsersTable
+  [tasks] as TasksTable
+  [projects] as ProjectsTable
+  [categories] as CategoriesTable
+  [comments] as CommentsTable
+  [roles] as RolesTable
+  [user_roles] as UserRolesTable
+  [task_assignments] as TaskAssignmentsTable
+  [task_categories] as TaskCategoriesTable
+  [task_projects] as TaskProjectsTable
+}
+
+package "External Services" {
+  [JWT] as JWT
+  [bcrypt] as Bcrypt
+  [class-validator] as Validator
+}
+
+' Frontend connections
+Dashboard --> TasksStore
+Tasks --> TasksStore
+Projects --> ProjectsStore
+Login --> AuthStore
+Register --> AuthStore
+Profile --> UsersStore
+
+TasksStore --> AuthCtrl
+ProjectsStore --> ProjectsCtrl
+AuthStore --> AuthCtrl
+UsersStore --> UsersCtrl
+CategoriesStore --> CategoriesCtrl
+
+' Backend connections
+AuthCtrl --> AuthSvc
+TasksCtrl --> TasksSvc
+ProjectsCtrl --> ProjectsSvc
+UsersCtrl --> UsersSvc
+CategoriesCtrl --> CategoriesSvc
+CommentsCtrl --> CommentsSvc
+
+AuthSvc --> UserModel
+TasksSvc --> TaskModel
+ProjectsSvc --> ProjectModel
+UsersSvc --> UserModel
+CategoriesSvc --> CategoryModel
+CommentsSvc --> CommentModel
+
+' Guards and middleware
+AuthCtrl --> JWTGuard
+TasksCtrl --> JWTGuard
+ProjectsCtrl --> JWTGuard
+UsersCtrl --> JWTGuard
+
+AuthCtrl --> ValidationPipe
+TasksCtrl --> ValidationPipe
+ProjectsCtrl --> ValidationPipe
+
+' Database connections
+UserModel --> UsersTable
+TaskModel --> TasksTable
+ProjectModel --> ProjectsTable
+CategoryModel --> CategoriesTable
+CommentModel --> CommentsTable
+RoleModel --> RolesTable
+
+' External services
+AuthSvc --> JWT
+AuthSvc --> Bcrypt
+ValidationPipe --> Validator
+
+@enduml 

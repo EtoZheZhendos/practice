@@ -1,0 +1,202 @@
+@startuml TaskManager Data Model
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam entity {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+  FontColor #1565C0
+}
+skinparam database {
+  BackgroundColor #E8F5E8
+  BorderColor #388E3C
+  FontColor #1B5E20
+}
+
+title ER диаграмма модели данных TaskManager
+
+entity "users" {
+  * id : INTEGER <<PK>>
+  --
+  * email : VARCHAR(255) <<UNIQUE>>
+  * password : VARCHAR(255)
+  * firstName : VARCHAR(100)
+  * lastName : VARCHAR(100)
+  avatar : VARCHAR(500)
+  isActive : BOOLEAN <<DEFAULT true>>
+  lastLoginAt : TIMESTAMP
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "roles" {
+  * id : INTEGER <<PK>>
+  --
+  * name : VARCHAR(50) <<UNIQUE>>
+  * description : TEXT
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "user_roles" {
+  * id : INTEGER <<PK>>
+  --
+  * userId : INTEGER <<FK>>
+  * roleId : INTEGER <<FK>>
+  * assignedAt : TIMESTAMP
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+}
+
+entity "categories" {
+  * id : INTEGER <<PK>>
+  --
+  * name : VARCHAR(100)
+  * description : TEXT
+  * color : VARCHAR(7) <<HEX COLOR>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "projects" {
+  * id : INTEGER <<PK>>
+  --
+  * name : VARCHAR(200)
+  * description : TEXT
+  * status : ENUM('active', 'inactive', 'completed')
+  * color : VARCHAR(7) <<HEX COLOR>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "tasks" {
+  * id : INTEGER <<PK>>
+  --
+  * title : VARCHAR(500)
+  description : TEXT
+  * status : ENUM('pending', 'in_progress', 'completed')
+  * priority : INTEGER <<DEFAULT 1>>
+  dueDate : TIMESTAMP
+  * createdById : INTEGER <<FK>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "task_assignments" {
+  * id : INTEGER <<PK>>
+  --
+  * taskId : INTEGER <<FK>>
+  * userId : INTEGER <<FK>>
+  * status : ENUM('assigned', 'accepted', 'rejected')
+  * assignedAt : TIMESTAMP
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "task_categories" {
+  * id : INTEGER <<PK>>
+  --
+  * taskId : INTEGER <<FK>>
+  * categoryId : INTEGER <<FK>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+}
+
+entity "task_projects" {
+  * id : INTEGER <<PK>>
+  --
+  * taskId : INTEGER <<FK>>
+  * projectId : INTEGER <<FK>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+}
+
+entity "comments" {
+  * id : INTEGER <<PK>>
+  --
+  * content : TEXT
+  * taskId : INTEGER <<FK>>
+  * userId : INTEGER <<FK>>
+  * createdAt : TIMESTAMP
+  * updatedAt : TIMESTAMP
+  deletedAt : TIMESTAMP <<SOFT DELETE>>
+}
+
+entity "task_history" {
+  * id : INTEGER <<PK>>
+  --
+  * taskId : INTEGER <<FK>>
+  * userId : INTEGER <<FK>>
+  * action : VARCHAR(50)
+  * fieldName : VARCHAR(100)
+  oldValue : TEXT
+  newValue : TEXT
+  * createdAt : TIMESTAMP
+}
+
+' Relationships
+users ||--o{ user_roles : "has"
+roles ||--o{ user_roles : "assigned to"
+
+users ||--o{ tasks : "creates"
+tasks ||--o{ task_assignments : "assigned to"
+users ||--o{ task_assignments : "assigned"
+
+tasks ||--o{ task_categories : "belongs to"
+categories ||--o{ task_categories : "contains"
+
+tasks ||--o{ task_projects : "belongs to"
+projects ||--o{ task_projects : "contains"
+
+tasks ||--o{ comments : "has"
+users ||--o{ comments : "writes"
+
+tasks ||--o{ task_history : "tracks"
+users ||--o{ task_history : "performs"
+
+' Indexes
+note right of users
+  Indexes:
+  - email (UNIQUE)
+  - isActive
+  - createdAt
+end note
+
+note right of tasks
+  Indexes:
+  - status
+  - priority
+  - createdById
+  - dueDate
+  - createdAt
+end note
+
+note right of task_assignments
+  Indexes:
+  - taskId
+  - userId
+  - status
+end note
+
+note right of comments
+  Indexes:
+  - taskId
+  - userId
+  - createdAt
+end note
+
+note right of task_history
+  Indexes:
+  - taskId
+  - userId
+  - action
+  - createdAt
+end note
+
+@enduml 
