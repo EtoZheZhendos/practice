@@ -21,67 +21,285 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# TaskManager Backend
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📋 Описание
 
-## Project setup
+Backend система управления задачами, построенная на NestJS с использованием SQLite и Sequelize ORM. Система обеспечивает полный цикл управления задачами, пользователями, проектами и категориями.
 
-```bash
-$ npm install
+## 🏗️ Архитектура
+
+### Технологический стек
+- **Framework**: NestJS (Node.js)
+- **Database**: SQLite с Sequelize ORM
+- **Authentication**: JWT токены
+- **Validation**: class-validator
+- **Password Hashing**: bcrypt
+- **CORS**: Настроен для работы с Quasar frontend
+
+### Структура проекта
+
+```
+src/
+├── main.ts                    # Точка входа приложения
+├── app.module.ts             # Корневой модуль
+├── app.controller.ts         # Основной контроллер
+├── app.service.ts            # Основной сервис
+├── auth/                     # Модуль аутентификации
+│   ├── auth.controller.ts    # Контроллер аутентификации
+│   ├── auth.service.ts       # Сервис аутентификации
+│   ├── auth.module.ts        # Модуль аутентификации
+│   ├── guards/               # Guards для защиты маршрутов
+│   │   └── jwt-auth.guard.ts # JWT Guard
+│   ├── strategies/           # Стратегии аутентификации
+│   │   └── jwt.strategy.ts   # JWT Strategy
+│   └── dto/                  # DTO для аутентификации
+│       ├── login.dto.ts      # DTO для входа
+│       └── register.dto.ts   # DTO для регистрации
+├── users/                    # Модуль пользователей
+│   ├── users.controller.ts   # Контроллер пользователей
+│   ├── users.service.ts      # Сервис пользователей
+│   ├── users.module.ts       # Модуль пользователей
+│   ├── models/               # Модели пользователей
+│   │   └── user.model.ts     # Модель пользователя
+│   ├── dto/                  # DTO для пользователей
+│   │   ├── create-user.dto.ts
+│   │   └── update-user.dto.ts
+│   └── interfaces/           # Интерфейсы
+│       └── user.interface.ts
+├── tasks/                    # Модуль задач
+│   ├── tasks.controller.ts   # Контроллер задач
+│   ├── tasks.service.ts      # Сервис задач
+│   ├── tasks.module.ts       # Модуль задач
+│   ├── models/               # Модели задач
+│   │   ├── task.model.ts     # Модель задачи
+│   │   └── task-assignment.model.ts # Модель назначения
+│   ├── dto/                  # DTO для задач
+│   │   ├── create-task.dto.ts
+│   │   └── update-task.dto.ts
+│   └── interfaces/           # Интерфейсы
+│       └── task.interface.ts
+├── projects/                 # Модуль проектов
+├── categories/               # Модуль категорий
+├── comments/                 # Модуль комментариев
+├── roles/                    # Модуль ролей
+├── history/                  # Модуль истории
+└── database/                 # База данных
+    ├── seed.ts               # Скрипт сидирования
+    └── seeds/                # Начальные данные
+        └── initial-data.seed.ts
 ```
 
-## Compile and run the project
+## 🔐 Аутентификация и авторизация
 
+### JWT Guard
+- **Файл**: `auth/guards/jwt-auth.guard.ts`
+- **Назначение**: Защита маршрутов с помощью JWT токенов
+- **Особенности**: 
+  - Поддержка публичных маршрутов через декоратор `@Public()`
+  - Автоматическая проверка токенов
+  - Извлечение данных пользователя из токена
+
+### Стратегия JWT
+- **Файл**: `auth/strategies/jwt.strategy.ts`
+- **Назначение**: Валидация JWT токенов
+- **Функции**:
+  - Проверка подписи токена
+  - Извлечение payload с данными пользователя
+  - Проверка срока действия токена
+
+### Сервис аутентификации
+- **Файл**: `auth/auth.service.ts`
+- **Основные методы**:
+  - `register()` - регистрация пользователя
+  - `login()` - вход в систему
+  - `validateUser()` - валидация пользователя
+  - `getProfile()` - получение профиля
+
+## 📊 Модели данных
+
+### Пользователь (User)
+- **Основные поля**: id, email, password, firstName, lastName
+- **Связи**: roles (many-to-many), createdTasks (one-to-many)
+- **Особенности**: Хеширование паролей, мягкое удаление
+
+### Задача (Task)
+- **Основные поля**: id, title, description, status, priority, dueDate
+- **Связи**: 
+  - createdBy (belongs-to User)
+  - categories (many-to-many)
+  - projects (many-to-many)
+  - assignments (one-to-many)
+  - comments (one-to-many)
+
+### Роль (Role)
+- **Основные поля**: id, name, description
+- **Связи**: users (many-to-many через UserRole)
+
+### Категория (Category)
+- **Основные поля**: id, name, description, color
+- **Связи**: tasks (many-to-many через TaskCategory)
+
+### Проект (Project)
+- **Основные поля**: id, name, description, status, color
+- **Связи**: tasks (many-to-many через TaskProject)
+
+## 🔄 API Endpoints
+
+### Аутентификация
+- `POST /auth/register` - Регистрация пользователя
+- `POST /auth/login` - Вход в систему
+- `GET /auth/profile` - Получение профиля (защищенный)
+
+### Пользователи
+- `GET /users` - Получение всех пользователей
+- `GET /users/:id` - Получение пользователя по ID
+- `POST /users` - Создание пользователя
+- `PATCH /users/:id` - Обновление пользователя
+- `DELETE /users/:id` - Удаление пользователя
+
+### Задачи
+- `GET /tasks` - Получение всех задач с фильтрацией
+- `GET /tasks/:id` - Получение задачи по ID
+- `POST /tasks` - Создание задачи
+- `PATCH /tasks/:id` - Обновление задачи
+- `DELETE /tasks/:id` - Удаление задачи
+
+### Проекты
+- `GET /projects` - Получение всех проектов
+- `GET /projects/:id` - Получение проекта по ID
+- `POST /projects` - Создание проекта
+- `PATCH /projects/:id` - Обновление проекта
+- `DELETE /projects/:id` - Удаление проекта
+
+### Категории
+- `GET /categories` - Получение всех категорий
+- `GET /categories/:id` - Получение категории по ID
+- `POST /categories` - Создание категории
+- `PATCH /categories/:id` - Обновление категории
+- `DELETE /categories/:id` - Удаление категории
+
+## 🛡️ Безопасность
+
+### Валидация данных
+- Использование `class-validator` для валидации DTO
+- Глобальная валидация через `ValidationPipe`
+- Проверка типов данных и ограничений
+
+### Хеширование паролей
+- Использование bcrypt с 10 раундами соли
+- Автоматическое хеширование при создании/обновлении пользователей
+
+### CORS
+- Настроен для работы с Quasar dev сервером
+- Поддержка credentials для передачи токенов
+
+## 🗄️ База данных
+
+### Конфигурация
+- **СУБД**: SQLite
+- **Файл**: `./database.sqlite`
+- **ORM**: Sequelize
+- **Синхронизация**: Автоматическая (synchronize: true)
+
+### Сидирование
+- **Файл**: `database/seed.ts`
+- **Назначение**: Заполнение базы данных начальными данными
+- **Команда**: `npm run seed`
+
+### Начальные данные
+- Роли: admin, user, manager
+- Пользователи: admin@example.com, user1@example.com, user2@example.com
+- Категории: Баг, Функция, Улучшение
+- Проекты: Основной проект, Тестовый проект
+
+## 🚀 Запуск
+
+### Установка зависимостей
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
-
+### Запуск в режиме разработки
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+### Сидирование базы данных
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run seed
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Сборка для продакшена
+```bash
+npm run build
+npm run start:prod
+```
 
-## Resources
+## 🔧 Конфигурация
 
-Check out a few resources that may come in handy when working with NestJS:
+### Переменные окружения
+- `PORT` - Порт сервера (по умолчанию 3001)
+- `JWT_SECRET` - Секретный ключ для JWT токенов
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Настройки CORS
+- Разрешенные origins: `http://localhost:9000`, `http://localhost:8080`
+- Поддержка credentials: `true`
+
+## 📝 Логирование
+
+Система использует встроенное логирование NestJS:
+- Логирование запросов и ответов
+- Логирование ошибок валидации
+- Логирование процесса аутентификации
+
+## 🧪 Тестирование
+
+### Структура тестов
+- E2E тесты в папке `test/`
+- Unit тесты рядом с тестируемыми файлами
+- Использование Jest как тестового фреймворка
+
+### Запуск тестов
+```bash
+npm run test
+npm run test:e2e
+```
+
+## 🔄 Миграции
+
+В текущей версии используется автоматическая синхронизация Sequelize. Для продакшена рекомендуется настроить миграции:
+
+```bash
+npx sequelize-cli migration:generate --name create-users
+npx sequelize-cli db:migrate
+```
+
+## 📈 Производительность
+
+### Оптимизации
+- Индексы на часто используемых полях
+- Ленивая загрузка связей
+- Пагинация для больших списков
+- Кэширование JWT токенов
+
+### Мониторинг
+- Логирование времени выполнения запросов
+- Отслеживание ошибок базы данных
+- Мониторинг использования памяти
+
+## 🔮 Планы развития
+
+### Краткосрочные
+- Добавление уведомлений
+- Система комментариев с упоминаниями
+- Экспорт данных в различных форматах
+
+### Долгосрочные
+- Микросервисная архитектура
+- Поддержка PostgreSQL
+- Система уведомлений в реальном времени
+- API документация с Swagger
 
 ## Support
 

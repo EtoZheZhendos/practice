@@ -1,11 +1,26 @@
+/**
+ * Начальные данные для базы данных
+ * Создает базовые роли, пользователей, категории и проекты для системы
+ * 
+ * @author TaskManager Team
+ * @version 1.0.0
+ */
+
 import { User } from '../../users/models/user.model';
 import { Role } from '../../roles/models/role.model';
 import { UserRole } from '../../roles/models/user-role.model';
 import { Category } from '../../categories/models/category.model';
 import { Project } from '../../projects/models/project.model';
 
+/**
+ * Функция заполнения базы данных начальными данными
+ * Создает структуру ролей, пользователей, категорий и проектов
+ * Используется для инициализации системы и тестирования
+ */
 export async function seedInitialData() {
-  // Создаем роли
+  console.log('📝 Creating roles...');
+  
+  // Создание ролей пользователей
   const adminRole = await Role.create({
     name: 'admin',
     description: 'Администратор системы',
@@ -21,7 +36,10 @@ export async function seedInitialData() {
     description: 'Менеджер проекта',
   });
 
-  // Создаем пользователей
+  console.log('👥 Creating users...');
+  
+  // Создание тестовых пользователей
+  // Пароль для всех пользователей: password123 (хешированный)
   const admin = await User.create({
     email: 'admin@example.com',
     password: '$2b$10$9Ko1VMV36UFnvHuzDszq3.oxvBJ7i8/5YrBftfQgwudBMrnzK01Hi', // password123
@@ -43,7 +61,9 @@ export async function seedInitialData() {
     lastName: 'Петров',
   });
 
-  // Связываем пользователей с ролями через UserRole
+  console.log('🔗 Assigning roles to users...');
+  
+  // Назначение ролей пользователям через промежуточную таблицу UserRole
   await UserRole.create({
     userId: admin.id,
     roleId: adminRole.id,
@@ -62,39 +82,48 @@ export async function seedInitialData() {
     assignedAt: new Date(),
   });
 
-  // Создаем категории
+  console.log('🏷️ Creating categories...');
+  
+  // Создание категорий для задач
   const bugCategory = await Category.create({
     name: 'Баг',
     description: 'Исправление ошибок',
-    color: '#ff4444',
+    color: '#ff4444',  // Красный цвет для багов
   });
 
   const featureCategory = await Category.create({
     name: 'Функция',
     description: 'Новые возможности',
-    color: '#44ff44',
+    color: '#44ff44',  // Зеленый цвет для новых функций
   });
 
   const improvementCategory = await Category.create({
     name: 'Улучшение',
     description: 'Улучшение существующего',
-    color: '#4444ff',
+    color: '#4444ff',  // Синий цвет для улучшений
   });
 
-  // Создаем проекты
+  console.log('📋 Creating projects...');
+  
+  // Создание проектов
   const mainProject = await Project.create({
     name: 'Основной проект',
     description: 'Главный проект системы',
     status: 'active',
-    color: '#ff8800',
+    color: '#ff8800',  // Оранжевый цвет
   });
 
   const testProject = await Project.create({
     name: 'Тестовый проект',
     description: 'Проект для тестирования',
     status: 'active',
-    color: '#8800ff',
+    color: '#8800ff',  // Фиолетовый цвет
   });
 
-  console.log('Initial data seeded successfully!');
+  console.log('✅ Initial data seeded successfully!');
+  console.log('📊 Created:');
+  console.log(`   - ${await Role.count()} roles`);
+  console.log(`   - ${await User.count()} users`);
+  console.log(`   - ${await Category.count()} categories`);
+  console.log(`   - ${await Project.count()} projects`);
 } 
