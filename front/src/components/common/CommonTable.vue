@@ -45,19 +45,51 @@
       @selection="handleSelection"
       @row-click="handleRowClick"
     >
-      <!-- Custom slots for columns -->
-      <template v-for="column in columns" :key="column.name" #[`body-cell-${column.name}`]="props">
-        <slot :name="`cell-${column.name}`" v-bind="props">
-          <q-td :props="props">
+      <template #body-cell-title="props">
+        <q-td :props="props">
+          <slot name="body-cell-title" v-bind="props">
             {{ props.value }}
-          </q-td>
-        </slot>
+          </slot>
+        </q-td>
       </template>
-
-      <!-- Actions column -->
+      <template #body-cell-status="props">
+        <q-td :props="props">
+          <slot name="body-cell-status" v-bind="props">
+            {{ props.value }}
+          </slot>
+        </q-td>
+      </template>
+      <template #body-cell-priority="props">
+        <q-td :props="props">
+          <slot name="body-cell-priority" v-bind="props">
+            {{ props.value }}
+          </slot>
+        </q-td>
+      </template>
+      <template #body-cell-assignments="props">
+        <q-td :props="props">
+          <slot name="body-cell-assignments" v-bind="props">
+            {{ props.value }}
+          </slot>
+        </q-td>
+      </template>
+      <template #body-cell-dueDate="props">
+        <q-td :props="props">
+          <slot name="body-cell-dueDate" v-bind="props">
+            {{ props.value }}
+          </slot>
+        </q-td>
+      </template>
+      <template #body-cell-createdBy="props">
+        <q-td :props="props">
+          <slot name="body-cell-createdBy" v-bind="props">
+            {{ props.value }}
+          </slot>
+        </q-td>
+      </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <slot name="actions" v-bind="props">
+          <slot name="body-cell-actions" v-bind="props">
             <q-btn
               v-if="showEditButton"
               icon="edit"
@@ -81,8 +113,9 @@
           </slot>
         </q-td>
       </template>
-
-      <!-- Empty state -->
+      <template #body-cell="props">
+        <q-td :props="props">{{ props.value }}</q-td>
+      </template>
       <template #no-data>
         <slot name="no-data">
           <div class="full-width row flex-center q-pa-md">
@@ -91,8 +124,6 @@
           </div>
         </slot>
       </template>
-
-      <!-- Loading state -->
       <template #loading>
         <slot name="loading">
           <q-inner-loading showing color="primary" />
@@ -100,7 +131,6 @@
       </template>
     </q-table>
 
-    <!-- Pagination info -->
     <div v-if="showPaginationInfo" class="q-mt-sm text-caption text-grey-6">
       Показано {{ pagination.rowsNumber }} из {{ totalRows }} записей
     </div>
@@ -699,6 +729,42 @@ const handleRowClick = (evt, row) => {
       animation-delay: #{$i * 0.05}s;
     }
   }
+}
+
+// --- ДОБАВЛЯЕМ СТИЛИ ДЛЯ СЛОТОВ ---
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+}
+.priority-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(237, 137, 54, 0.1);
+  color: #ed8936;
+}
+.assignees-list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.assignee-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+.no-assignees {
+  color: #a0aec0;
+  font-size: 0.875rem;
 }
 </style>
 

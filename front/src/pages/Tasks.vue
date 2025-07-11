@@ -107,45 +107,70 @@
           @row-click="handleRowClick"
           tableClass="common-table--darkglass"
         >
-          <template #cell-priority="{ row }">
-            <span :class="getPriorityColor(row.priority)" class="priority-badge">
-              {{ getPriorityText(row.priority) }}
-            </span>
+          <template #body-cell-title="{ row }">
+            <span>{{ row.title }}</span>
           </template>
-
-          <template #cell-status="{ row }">
-            <span :class="getStatusColor(row.status)" class="status-badge">
+          <template #body-cell-status="{ row }">
+            <q-badge :class="['status-badge', getStatusColor(row.status)]">
               {{ getStatusText(row.status) }}
-            </span>
+            </q-badge>
           </template>
-
-          <template #cell-assignees="{ row }">
+          <template #body-cell-priority="{ row }">
+            <q-badge :class="['priority-badge', getPriorityColor(row.priority)]">
+              {{ getPriorityText(row.priority) }}
+            </q-badge>
+          </template>
+          <template #body-cell-assignments="{ row }">
             <div class="assignees-list">
               <q-avatar
-                v-for="assignment in row.assignments"
+                v-for="assignment in Array.isArray(row.assignments) ? row.assignments : []"
                 :key="assignment.id"
                 size="24px"
                 color="primary"
                 class="assignee-avatar"
+                :title="assignment.user ? `${assignment.user.firstName} ${assignment.user.lastName}` : ''"
               >
                 <q-icon name="person" color="white" size="12px" />
               </q-avatar>
-              <span v-if="!row.assignments?.length" class="no-assignees">
+              <span v-if="!row.assignments || !row.assignments.length" class="no-assignees">
                 Нет назначений
               </span>
             </div>
           </template>
-
-          <template #cell-dueDate="{ row }">
+          <template #body-cell-dueDate="{ row }">
             <span :class="getDueDateClass(row.dueDate)">
               {{ formatDate(row.dueDate) }}
             </span>
+          </template>
+          <template #body-cell-createdBy="{ row }">
+            <span>
+              {{ row.createdBy ? `${row.createdBy.firstName} ${row.createdBy.lastName}` : '' }}
+            </span>
+          </template>
+          <template #body-cell-actions="{ row }">
+            <q-btn
+              icon="edit"
+              size="sm"
+              flat
+              round
+              dense
+              color="primary"
+              @click.stop="handleEdit(row)"
+            />
+            <q-btn
+              icon="delete"
+              size="sm"
+              flat
+              round
+              dense
+              color="negative"
+              @click.stop="handleDelete(row)"
+            />
           </template>
         </CommonTable>
       </CommonCard>
     </div>
 
-    <!-- Диалог создания задачи -->
     <CommonDialog
       v-model="showCreateTaskDialog"
       title="Создать новую задачу"
@@ -282,55 +307,13 @@ const newTask = ref({
 
 // Колонки таблицы
 const columns = [
-  {
-    name: 'title',
-    label: 'Название',
-    field: 'title',
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'status',
-    label: 'Статус',
-    field: 'status',
-    sortable: true,
-    align: 'center'
-  },
-  {
-    name: 'priority',
-    label: 'Приоритет',
-    field: 'priority',
-    sortable: true,
-    align: 'center'
-  },
-  {
-    name: 'assignees',
-    label: 'Исполнители',
-    field: 'assignments',
-    sortable: false,
-    align: 'center'
-  },
-  {
-    name: 'dueDate',
-    label: 'Срок',
-    field: 'dueDate',
-    sortable: true,
-    align: 'center'
-  },
-  {
-    name: 'createdBy',
-    label: 'Создатель',
-    field: row => row.createdBy ? `${row.createdBy.firstName} ${row.createdBy.lastName}` : '',
-    sortable: false,
-    align: 'left'
-  },
-  {
-    name: 'actions',
-    label: 'Действия',
-    field: 'actions',
-    sortable: false,
-    align: 'center'
-  }
+  { name: 'title', label: 'Название', field: 'title', align: 'left', sortable: true },
+  { name: 'status', label: 'Статус', field: 'status', align: 'center', sortable: true },
+  { name: 'priority', label: 'Приоритет', field: 'priority', align: 'center', sortable: true },
+  { name: 'assignments', label: 'Исполнители', field: 'assignments', align: 'center' },
+  { name: 'dueDate', label: 'Срок', field: 'dueDate', align: 'center', sortable: true },
+  { name: 'createdBy', label: 'Создатель', field: 'createdBy', align: 'left' },
+  { name: 'actions', label: 'Действия', field: 'actions', align: 'center' }
 ]
 
 // Опции для селектов
